@@ -10,11 +10,14 @@ export default defineConfig({
         target: 'http://localhost:5000',
         changeOrigin: true
       },
-      // ✅ Add proxy for uploads
       '/uploads': {
         target: 'http://localhost:5000',
         changeOrigin: true
       }
     }
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: false
   }
 })

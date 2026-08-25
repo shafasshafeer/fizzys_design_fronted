@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import axios from 'axios';
+import config from './config';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import SizeGuide from './components/SizeGuide';
@@ -16,6 +17,9 @@ import Cart from './components/Cart';
 import ProductDetails from './components/ProductDetails';
 import AllProducts from './components/AllProducts';
 import './App.css';
+
+// Set base URL for all axios requests
+axios.defaults.baseURL = config.apiUrl;
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('adminToken');
@@ -128,7 +132,6 @@ function App() {
           
           <Route path="/cart" element={<Cart cart={cart} setCart={setCart} />} />
           
-          {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={
             <ProtectedRoute>
