@@ -1,4 +1,4 @@
-// Get API URL from environment variables
+// client/config.js
 const API_URL = import.meta.env.VITE_API_URL || '';
 
 export const config = {
