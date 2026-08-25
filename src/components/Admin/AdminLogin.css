@@ -1,0 +1,122 @@
+.admin-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8f4f0 0%, #ede8e2 100%);
+  padding: 20px;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 420px;
+}
+
+.login-box {
+  background: white;
+  padding: 50px 40px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.login-header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  color: #1a1a1a;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.login-header h2 {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  color: #888;
+  font-weight: 400;
+}
+
+.login-form .form-group {
+  margin-bottom: 20px;
+}
+
+.login-form .form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+}
+
+.login-form .form-group input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e0d6cc;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+  font-family: 'Inter', sans-serif;
+}
+
+.login-form .form-group input:focus {
+  outline: none;
+  border-color: #c4a882;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  transition: all 0.3s;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.login-btn:hover:not(:disabled) {
+  background: #c4a882;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(196, 168, 130, 0.3);
+}
+
+.login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-footer {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+  text-align: center;
+}
+
+.login-footer p {
+  font-size: 13px;
+  color: #888;
+  margin: 4px 0;
+}
+
+.login-footer .credentials {
+  color: #666;
+  font-size: 12px;
+  background: #f8f4f0;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 8px;
+  font-family: 'Inter', sans-serif;
+}
+
+@media (max-width: 480px) {
+  .login-box {
+    padding: 30px 20px;
+  }
+}
