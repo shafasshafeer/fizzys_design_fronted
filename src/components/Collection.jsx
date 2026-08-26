@@ -30,11 +30,24 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
     navigate('/products');
   };
 
-  // ✅ ALWAYS USE FALLBACK IMAGE
-  const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
-
-  const getImageUrl = () => {
-    return FALLBACK_IMAGE;
+  // ✅ FIXED: Use full backend URL for images
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) {
+      return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
+    }
+    // If it's already a full URL
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    // If it's a local path, use the backend URL
+    if (imagePath.startsWith('/uploads')) {
+      return `https://fizzys-design-backend.onrender.com${imagePath}`;
+    }
+    // If it's just a filename
+    if (!imagePath.includes('/')) {
+      return `https://fizzys-design-backend.onrender.com/uploads/${imagePath}`;
+    }
+    return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
   };
 
   if (loading) {
@@ -91,11 +104,11 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
               <Link to={`/product/${product._id}`} className="product-link">
                 <div className="product-image">
                   <img 
-                    src={getImageUrl()} 
+                    src={getImageUrl(product.image)} 
                     alt={product.name}
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = FALLBACK_IMAGE;
+                      e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
                     }}
                   />
                   {getBadge(product) && (

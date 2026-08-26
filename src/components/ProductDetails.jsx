@@ -32,19 +32,39 @@ const ProductDetails = ({ products, addToCart }) => {
     }
   }, [id, productList]);
 
-  // ✅ FORCE FALLBACK IMAGE - Always use Unsplash
- const getImageUrl = () => {
-  return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop';
-};
+  // ✅ FIXED: Use full backend URL for images
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) {
+      return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop';
+    }
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    if (imagePath.startsWith('/uploads')) {
+      return `https://fizzys-design-backend.onrender.com${imagePath}`;
+    }
+    if (!imagePath.includes('/')) {
+      return `https://fizzys-design-backend.onrender.com/uploads/${imagePath}`;
+    }
+    return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop';
+  };
 
-  // Get all images (main + additional) - all use fallback
+  // Get all images
   const getAllImages = () => {
-    // Always return fallback images array
-    return [
-      'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop',
-      'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=600&h=700&fit=crop',
-      'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&h=700&fit=crop'
-    ];
+    const images = [];
+    if (product) {
+      if (product.image) images.push(product.image);
+      if (product.images && Array.isArray(product.images)) {
+        images.push(...product.images);
+      }
+    }
+    // If no images, use fallback
+    if (images.length === 0) {
+      images.push('https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop');
+      images.push('https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=600&h=700&fit=crop');
+      images.push('https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&h=700&fit=crop');
+    }
+    return images;
   };
 
   const allImages = getAllImages();
@@ -95,7 +115,6 @@ const ProductDetails = ({ products, addToCart }) => {
     setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
   };
 
-  // Check stock status
   const isInStock = product && product.stock > 0;
   const stockStatus = product && product.stock > 10 ? 'In Stock' : 
                        product && product.stock > 0 ? `Only ${product.stock} left` : 
@@ -143,7 +162,7 @@ const ProductDetails = ({ products, addToCart }) => {
             <div className="main-image-wrapper">
               <div className="main-image" onClick={() => setIsImageModalOpen(true)}>
                 <img 
-                  src={getImageUrl()} 
+                  src={getImageUrl(allImages[currentImageIndex])} 
                   alt={product.name}
                   onError={(e) => {
                     e.target.onerror = null;
@@ -153,7 +172,6 @@ const ProductDetails = ({ products, addToCart }) => {
                 {product.isNew && <span className="badge new">NEW</span>}
                 {product.isBestseller && <span className="badge bestseller">BESTSELLER</span>}
                 
-                {/* Stock Badge */}
                 <div className={`stock-badge ${stockClass}`}>
                   {stockStatus}
                 </div>
@@ -180,7 +198,7 @@ const ProductDetails = ({ products, addToCart }) => {
                 {allImages.map((img, index) => (
                   <img 
                     key={index}
-                    src={img} 
+                    src={getImageUrl(img)} 
                     alt={`${product.name} ${index + 1}`} 
                     className={`thumbnail ${currentImageIndex === index ? 'active' : ''}`}
                     onClick={() => setCurrentImageIndex(index)}
@@ -195,7 +213,6 @@ const ProductDetails = ({ products, addToCart }) => {
             <h1 className="product-name">{product.name}</h1>
             <p className="product-price">₹{product.price?.toLocaleString() || product.price}</p>
             
-            {/* Stock Status Display */}
             <div className={`stock-status ${stockClass}`}>
               <span className="stock-dot"></span>
               <span className="stock-text">{stockStatus}</span>
@@ -315,7 +332,7 @@ const ProductDetails = ({ products, addToCart }) => {
                 <Link to={`/product/${related._id}`} key={related._id} className="related-card">
                   <div className="related-image">
                     <img 
-                      src="https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=300&h=400&fit=crop" 
+                      src={getImageUrl(related.image)} 
                       alt={related.name}
                       onError={(e) => {
                         e.target.onerror = null;
@@ -347,7 +364,7 @@ const ProductDetails = ({ products, addToCart }) => {
             </button>
             <div className="image-modal-content">
               <img 
-                src={getImageUrl()} 
+                src={getImageUrl(allImages[currentImageIndex])} 
                 alt={product.name}
                 onError={(e) => {
                   e.target.onerror = null;
@@ -372,7 +389,7 @@ const ProductDetails = ({ products, addToCart }) => {
               {allImages.map((img, index) => (
                 <img 
                   key={index}
-                  src={img} 
+                  src={getImageUrl(img)} 
                   alt={`Thumbnail ${index + 1}`}
                   className={currentImageIndex === index ? 'active' : ''}
                   onClick={() => setCurrentImageIndex(index)}
