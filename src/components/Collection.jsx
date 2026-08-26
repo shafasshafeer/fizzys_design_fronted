@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiShoppingCart, FiArrowRight } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/imageUtils';
 import './Collection.css';
 
 const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
@@ -28,26 +29,6 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
 
   const handleViewAll = () => {
     navigate('/products');
-  };
-
-  // ✅ FIXED: Use full backend URL for images
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) {
-      return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
-    }
-    // If it's already a full URL
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-      return imagePath;
-    }
-    // If it's a local path, use the backend URL
-    if (imagePath.startsWith('/uploads')) {
-      return `https://fizzys-design-backend.onrender.com${imagePath}`;
-    }
-    // If it's just a filename
-    if (!imagePath.includes('/')) {
-      return `https://fizzys-design-backend.onrender.com/uploads/${imagePath}`;
-    }
-    return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
   };
 
   if (loading) {

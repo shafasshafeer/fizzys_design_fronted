@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FiShoppingCart, FiHeart, FiShare2, FiChevronLeft, FiChevronRight, FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/imageUtils';
 import './ProductDetails.css';
 
 const ProductDetails = ({ products, addToCart }) => {
@@ -32,24 +33,6 @@ const ProductDetails = ({ products, addToCart }) => {
     }
   }, [id, productList]);
 
-  // ✅ FIXED: Use full backend URL for images
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) {
-      return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop';
-    }
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-      return imagePath;
-    }
-    if (imagePath.startsWith('/uploads')) {
-      return `https://fizzys-design-backend.onrender.com${imagePath}`;
-    }
-    if (!imagePath.includes('/')) {
-      return `https://fizzys-design-backend.onrender.com/uploads/${imagePath}`;
-    }
-    return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop';
-  };
-
-  // Get all images
   const getAllImages = () => {
     const images = [];
     if (product) {
@@ -58,7 +41,6 @@ const ProductDetails = ({ products, addToCart }) => {
         images.push(...product.images);
       }
     }
-    // If no images, use fallback
     if (images.length === 0) {
       images.push('https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop');
       images.push('https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=600&h=700&fit=crop');
@@ -147,7 +129,6 @@ const ProductDetails = ({ products, addToCart }) => {
   return (
     <div className="product-details">
       <div className="container">
-        {/* Breadcrumb */}
         <div className="breadcrumb">
           <Link to="/">Home</Link>
           <span>/</span>
@@ -157,7 +138,6 @@ const ProductDetails = ({ products, addToCart }) => {
         </div>
 
         <div className="product-details-grid">
-          {/* Product Image Section */}
           <div className="product-image-section">
             <div className="main-image-wrapper">
               <div className="main-image" onClick={() => setIsImageModalOpen(true)}>
@@ -192,7 +172,6 @@ const ProductDetails = ({ products, addToCart }) => {
               </div>
             </div>
 
-            {/* Thumbnails */}
             {allImages.length > 1 && (
               <div className="thumbnail-images">
                 {allImages.map((img, index) => (
@@ -208,7 +187,6 @@ const ProductDetails = ({ products, addToCart }) => {
             )}
           </div>
 
-          {/* Product Info */}
           <div className="product-info-section">
             <h1 className="product-name">{product.name}</h1>
             <p className="product-price">₹{product.price?.toLocaleString() || product.price}</p>
@@ -229,7 +207,6 @@ const ProductDetails = ({ products, addToCart }) => {
               <p>{product.description || 'This exquisite piece is crafted with premium quality fabric and impeccable stitching. Perfect for any occasion, this design reflects elegance and timeless beauty.'}</p>
             </div>
 
-            {/* Size Selection */}
             <div className="size-selection">
               <div className="size-header">
                 <h4>Select Size</h4>
@@ -249,7 +226,6 @@ const ProductDetails = ({ products, addToCart }) => {
               </div>
             </div>
 
-            {/* Quantity */}
             <div className="quantity-selection">
               <h4>Quantity</h4>
               <div className="quantity-controls">
@@ -280,7 +256,6 @@ const ProductDetails = ({ products, addToCart }) => {
               )}
             </div>
 
-            {/* Action Buttons */}
             <div className="action-buttons">
               <button 
                 className={`add-to-cart-btn-details ${!isInStock ? 'disabled' : ''}`}
@@ -303,7 +278,6 @@ const ProductDetails = ({ products, addToCart }) => {
               <button className="meta-btn"><FiShare2 /> Share</button>
             </div>
 
-            {/* Delivery Info */}
             <div className="delivery-info">
               <div className="delivery-item">
                 <span>🚚</span>
@@ -323,7 +297,6 @@ const ProductDetails = ({ products, addToCart }) => {
           </div>
         </div>
 
-        {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div className="related-products">
             <h2 className="section-title">Related Products</h2>
@@ -355,7 +328,6 @@ const ProductDetails = ({ products, addToCart }) => {
         )}
       </div>
 
-      {/* Image Lightbox Modal */}
       {isImageModalOpen && (
         <div className="image-modal-overlay" onClick={() => setIsImageModalOpen(false)}>
           <div className="image-modal" onClick={(e) => e.stopPropagation()}>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { FiShoppingCart, FiFilter, FiGrid, FiList } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/imageUtils';
 import './AllProducts.css';
 
 const AllProducts = ({ products, addToCart, loading }) => {
@@ -70,23 +71,6 @@ const AllProducts = ({ products, addToCart, loading }) => {
     }
     addToCart(product, size);
     toast.success(`${product.name} added to cart!`);
-  };
-
-  // ✅ FIXED: Use full backend URL for images
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) {
-      return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
-    }
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-      return imagePath;
-    }
-    if (imagePath.startsWith('/uploads')) {
-      return `https://fizzys-design-backend.onrender.com${imagePath}`;
-    }
-    if (!imagePath.includes('/')) {
-      return `https://fizzys-design-backend.onrender.com/uploads/${imagePath}`;
-    }
-    return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
   };
 
   if (loading) {
