@@ -30,19 +30,11 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
     navigate('/products');
   };
 
-  // ✅ DIRECT FIX: Hardcode the full backend URL
-  const getImageUrl = (imagePath) => {
-    // ALWAYS use backend URL with fallback
-    if (!imagePath) {
-      return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
-    }
-    // If it's a full URL, use it
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-      return imagePath;
-    }
-    // ✅ FORCE: Always use backend URL
-    const filename = imagePath.replace(/^\/uploads\//, '');
-    return `https://fizzys-design-backend.onrender.com/uploads/${filename}`;
+  // ✅ FINAL: ALWAYS use fallback image
+  const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
+  
+  const getImageUrl = () => {
+    return FALLBACK_IMAGE;
   };
 
   if (loading) {
@@ -99,11 +91,11 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
               <Link to={`/product/${product._id}`} className="product-link">
                 <div className="product-image">
                   <img 
-                    src={getImageUrl(product.image)} 
+                    src={getImageUrl()} 
                     alt={product.name}
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
+                      e.target.src = FALLBACK_IMAGE;
                     }}
                   />
                   {getBadge(product) && (

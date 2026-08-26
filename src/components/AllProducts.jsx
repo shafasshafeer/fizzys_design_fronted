@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { FiShoppingCart, FiFilter, FiGrid, FiList } from 'react-icons/fi';
 import toast from 'react-hot-toast';
-import { getImageUrl } from '../utils/imageUtils';
 import './AllProducts.css';
 
 const AllProducts = ({ products, addToCart, loading }) => {
@@ -71,6 +70,13 @@ const AllProducts = ({ products, addToCart, loading }) => {
     }
     addToCart(product, size);
     toast.success(`${product.name} added to cart!`);
+  };
+
+  // ✅ FINAL: ALWAYS use fallback image
+  const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
+  
+  const getImageUrl = () => {
+    return FALLBACK_IMAGE;
   };
 
   if (loading) {
@@ -176,11 +182,11 @@ const AllProducts = ({ products, addToCart, loading }) => {
                 <Link to={`/product/${product._id}`} className="product-link">
                   <div className="product-image">
                     <img 
-                      src={getImageUrl(product.image)} 
+                      src={getImageUrl()} 
                       alt={product.name}
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
+                        e.target.src = FALLBACK_IMAGE;
                       }}
                     />
                     {product.isNew && <span className="product-badge new">NEW</span>}
