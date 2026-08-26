@@ -30,29 +30,9 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
     navigate('/products');
   };
 
-  // ✅ FIXED: Get image URL with fallback for all cases
+  // ✅ FORCE FALLBACK FOR ALL IMAGES
   const getImageUrl = (imagePath) => {
-    // If no image, use fallback
-    if (!imagePath) {
-      return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
-    }
-    // If it's a Cloudinary URL, use it
-    if (imagePath.includes('cloudinary')) {
-      return imagePath;
-    }
-    // If it's any other http/https URL, use it
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-      return imagePath;
-    }
-    // If it's a local path (/uploads/...), use fallback
-    if (imagePath.startsWith('/uploads')) {
-      return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
-    }
-    // If it's just a filename, use fallback
-    if (!imagePath.includes('/')) {
-      return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
-    }
-    // Default fallback
+    // ALWAYS use fallback for now - since local images don't exist on Vercel
     return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
   };
 

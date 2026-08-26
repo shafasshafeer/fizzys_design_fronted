@@ -78,17 +78,10 @@ const AllProducts = ({ products, addToCart, loading }) => {
     toast.success(`${product.name} added to cart!`);
   };
 
+  // ✅ FIXED: Force fallback for all images
   const getImageUrl = (imagePath) => {
-    if (!imagePath) {
-      return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
-    }
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-      return imagePath;
-    }
-    if (imagePath.startsWith('/uploads')) {
-      return imagePath;
-    }
-    return `/uploads/${imagePath}`;
+    // ALWAYS use fallback for now - since local images don't exist on Vercel
+    return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
   };
 
   if (loading) {
