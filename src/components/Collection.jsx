@@ -47,6 +47,10 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
     );
   }
 
+
+  // In Collection.jsx, add this before the return:
+console.log('Collection - First product image:', productList[0]?.image);
+
   if (productList.length === 0) {
     return (
       <section className="collection">
