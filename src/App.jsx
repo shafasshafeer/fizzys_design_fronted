@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import axios from 'axios';
-import config from './config';
+import config from '../config';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import SizeGuide from './components/SizeGuide';
