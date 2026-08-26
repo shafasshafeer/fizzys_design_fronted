@@ -56,9 +56,6 @@
   gap: 15px;
 }
 
-/* ============================================
-   IMAGE UPLOAD STYLES
-   ============================================ */
 .image-upload-section .image-helper {
   font-size: 13px;
   color: #888;
@@ -158,9 +155,6 @@
   border-style: solid;
 }
 
-/* ============================================
-   SIZES
-   ============================================ */
 .size-checkboxes {
   display: flex;
   flex-wrap: wrap;
@@ -194,9 +188,6 @@
   border-color: #c4a882;
 }
 
-/* ============================================
-   CHECKBOX GROUP
-   ============================================ */
 .checkbox-group {
   display: flex;
   gap: 20px;
@@ -214,9 +205,6 @@
   width: auto;
 }
 
-/* ============================================
-   FORM ACTIONS
-   ============================================ */
 .form-actions {
   display: flex;
   gap: 15px;
@@ -258,9 +246,6 @@
   cursor: not-allowed;
 }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
 @media (max-width: 768px) {
   .product-form {
     padding: 20px;

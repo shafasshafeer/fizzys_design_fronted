@@ -24,7 +24,6 @@ const AddProduct = ({ fetchProducts }) => {
 
   const sizeOptions = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
   
-  // Updated categories with all new options
   const categoryOptions = [
     'ethnic',
     'western', 
@@ -153,7 +152,7 @@ const AddProduct = ({ fetchProducts }) => {
   };
 
   // ============================================
-  // Handle Submit
+  // Handle Submit - Sends to Cloudinary
   // ============================================
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -172,18 +171,24 @@ const AddProduct = ({ fetchProducts }) => {
     try {
       const formDataToSend = new FormData();
       formDataToSend.append('name', formData.name);
-      formDataToSend.append('price', formData.price);
+      formDataToSend.append('price', String(formData.price));
       formDataToSend.append('description', formData.description || '');
       formDataToSend.append('sizes', JSON.stringify(formData.sizes));
       formDataToSend.append('category', formData.category);
-      formDataToSend.append('stock', formData.stock);
-      formDataToSend.append('isNew', formData.isNew);
-      formDataToSend.append('isBestseller', formData.isBestseller);
-      formDataToSend.append('image', formData.image);
+      formDataToSend.append('stock', String(formData.stock));
+      formDataToSend.append('isNew', String(formData.isNew));
+      formDataToSend.append('isBestseller', String(formData.isBestseller));
       
-      formData.images.forEach((img) => {
-        formDataToSend.append('images', img);
-      });
+      // ✅ Send image files for Cloudinary upload
+      if (formData.image) {
+        formDataToSend.append('image', formData.image);
+      }
+      
+      if (formData.images && formData.images.length > 0) {
+        formData.images.forEach((img) => {
+          formDataToSend.append('images', img);
+        });
+      }
 
       const response = await axios.post('/api/products', formDataToSend, {
         headers: {
@@ -197,8 +202,8 @@ const AddProduct = ({ fetchProducts }) => {
         navigate('/admin');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to add product');
       console.error('Error:', error);
+      toast.error(error.response?.data?.message || 'Failed to add product');
     } finally {
       setLoading(false);
     }
@@ -274,9 +279,7 @@ const AddProduct = ({ fetchProducts }) => {
             </select>
           </div>
 
-          {/* ============================================
-              IMAGE UPLOAD SECTION
-          ============================================ */}
+          {/* Image Upload Section */}
           <div className="form-group image-upload-section">
             <label>Product Images</label>
             <p className="image-helper">Upload 1 main image + up to 3 additional images</p>
@@ -342,9 +345,7 @@ const AddProduct = ({ fetchProducts }) => {
             </div>
           </div>
 
-          {/* ============================================
-              SIZES SELECTION
-          ============================================ */}
+          {/* Sizes Selection */}
           <div className="form-group">
             <label>Available Sizes *</label>
             <div className="size-checkboxes">
@@ -361,9 +362,7 @@ const AddProduct = ({ fetchProducts }) => {
             </div>
           </div>
 
-          {/* ============================================
-              STATUS CHECKBOXES
-          ============================================ */}
+          {/* Status Checkboxes */}
           <div className="form-group checkbox-group">
             <label>
               <input

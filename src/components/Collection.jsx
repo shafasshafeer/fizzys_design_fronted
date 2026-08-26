@@ -30,9 +30,13 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
     navigate('/products');
   };
 
-  // ✅ FORCE FALLBACK FOR ALL IMAGES
   const getImageUrl = (imagePath) => {
-    // ALWAYS use fallback for now - since local images don't exist on Vercel
+    if (!imagePath) {
+      return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
+    }
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
     return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
   };
 

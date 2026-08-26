@@ -11,7 +11,6 @@ const EditProduct = ({ fetchProducts }) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [previewImages, setPreviewImages] = useState([]);
-  const [existingImages, setExistingImages] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -42,9 +41,7 @@ const EditProduct = ({ fetchProducts }) => {
     'Crop Tops'
   ];
 
-  // ============================================
   // Fetch Product Data
-  // ============================================
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -64,18 +61,17 @@ const EditProduct = ({ fetchProducts }) => {
             category: product.category || 'ethnic'
           });
           
-          // Set existing images for display
-          const existing = [];
-          if (product.image) existing.push({ url: product.image, isMain: true });
+          // Set preview images
+          const previews = [];
+          if (product.image) {
+            previews.push({ url: product.image, isMain: true, isExisting: true });
+          }
           if (product.images && product.images.length > 0) {
             product.images.forEach(img => {
-              existing.push({ url: img, isMain: false });
+              previews.push({ url: img, isMain: false, isExisting: true });
             });
           }
-          setExistingImages(existing);
-          
-          // Set preview images from existing
-          setPreviewImages(existing.map(img => ({ url: img.url, isExisting: true })));
+          setPreviewImages(previews);
         }
         setLoading(false);
       } catch (error) {
@@ -89,9 +85,6 @@ const EditProduct = ({ fetchProducts }) => {
     }
   }, [id, navigate]);
 
-  // ============================================
-  // Handle Form Changes
-  // ============================================
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
@@ -109,9 +102,7 @@ const EditProduct = ({ fetchProducts }) => {
     });
   };
 
-  // ============================================
-  // Handle New Main Image Upload
-  // ============================================
+  // Handle Main Image Upload
   const handleMainImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -127,7 +118,6 @@ const EditProduct = ({ fetchProducts }) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImages(prev => {
-          // Remove old main image if exists
           const filtered = prev.filter(p => !p.isMain);
           return [{ url: reader.result, file, isMain: true, isNew: true }, ...filtered];
         });
@@ -136,9 +126,7 @@ const EditProduct = ({ fetchProducts }) => {
     }
   };
 
-  // ============================================
-  // Handle New Additional Images Upload
-  // ============================================
+  // Handle Additional Images Upload
   const handleAdditionalImagesUpload = (e) => {
     const files = Array.from(e.target.files);
     const validFiles = files.filter(file => {
@@ -182,16 +170,12 @@ const EditProduct = ({ fetchProducts }) => {
     });
   };
 
-  // ============================================
   // Remove Image
-  // ============================================
   const removeImage = (index) => {
     setPreviewImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  // ============================================
   // Handle Submit
-  // ============================================
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -327,13 +311,11 @@ const EditProduct = ({ fetchProducts }) => {
             </select>
           </div>
 
-          {/* ============================================
-              IMAGE UPLOAD SECTION
-          ============================================ */}
+          {/* Image Upload Section */}
           <div className="form-group image-upload-section">
             <label>Product Images</label>
             <p className="image-helper">
-              Main image + up to 3 additional images. Click on images to replace.
+              Main image + up to 3 additional images
             </p>
             
             <div className="image-upload-grid">
@@ -371,9 +353,7 @@ const EditProduct = ({ fetchProducts }) => {
             </div>
           </div>
 
-          {/* ============================================
-              SIZES SELECTION
-          ============================================ */}
+          {/* Sizes Selection */}
           <div className="form-group">
             <label>Available Sizes *</label>
             <div className="size-checkboxes">
@@ -390,9 +370,7 @@ const EditProduct = ({ fetchProducts }) => {
             </div>
           </div>
 
-          {/* ============================================
-              STATUS CHECKBOXES
-          ============================================ */}
+          {/* Status Checkboxes */}
           <div className="form-group checkbox-group">
             <label>
               <input
