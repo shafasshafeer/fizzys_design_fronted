@@ -33,9 +33,9 @@ const ProductDetails = ({ products, addToCart }) => {
   }, [id, productList]);
 
   // ✅ FORCE FALLBACK IMAGE - Always use Unsplash
-  const getImageUrl = () => {
-    return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop';
-  };
+ const getImageUrl = () => {
+  return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop';
+};
 
   // Get all images (main + additional) - all use fallback
   const getAllImages = () => {

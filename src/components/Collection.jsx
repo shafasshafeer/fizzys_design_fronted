@@ -31,9 +31,11 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
   };
 
   // ✅ FORCE FALLBACK IMAGE
-  const getImageUrl = () => {
-    return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
-  };
+
+
+const getImageUrl = () => {
+  return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
+};
 
   if (loading) {
     return (
