@@ -38,13 +38,15 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
     if (!imagePath) {
       return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
     }
+    // If it's already a full URL (Cloudinary, etc.)
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
       return imagePath;
     }
+    // For local uploads
     if (imagePath.startsWith('/uploads')) {
       return imagePath;
     }
-    return `/uploads/${imagePath}`;
+    return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
   };
 
   if (loading) {
@@ -125,7 +127,8 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
                 </Link>
                 <p className="product-price">₹{product.price?.toLocaleString() || product.price}</p>
                 
-                {/* <div className="product-sizes">
+                {/* ✅ SHOW ALL SIZES */}
+                <div className="product-sizes">
                   {product.sizes && product.sizes.map((size) => (
                     <button
                       key={size}
@@ -136,22 +139,7 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
                       {size}
                     </button>
                   ))}
-                </div> */}
-
-// Update the product-sizes section in Collection.jsx
-
-<div className="product-sizes">
-  {product.sizes && product.sizes.map((size) => (
-    <button
-      key={size}
-      className={`size-btn ${selectedSize[product._id] === size ? 'active' : ''}`}
-      onClick={() => setSelectedSize({ ...selectedSize, [product._id]: size })}
-      disabled={product.stock <= 0}
-    >
-      {size}
-    </button>
-  ))}
-</div>
+                </div>
 
                 <button 
                   className={`add-to-cart-btn ${product.stock <= 0 ? 'disabled' : ''}`}
