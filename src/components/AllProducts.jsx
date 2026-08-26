@@ -14,7 +14,6 @@ const AllProducts = ({ products, addToCart, loading }) => {
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
 
-  // Category options for filter
   const categoryOptions = [
     'All',
     '2-Piece Cord Sets',
@@ -31,30 +30,25 @@ const AllProducts = ({ products, addToCart, loading }) => {
     'festive'
   ];
 
-  // Ensure products is always an array
   const productList = Array.isArray(products) ? products : [];
 
   useEffect(() => {
     let filtered = [...productList];
 
-    // Category filter from URL
     if (category === 'new-arrivals') {
       filtered = filtered.filter(p => p.isNew);
     } else if (category === 'bestsellers') {
       filtered = filtered.filter(p => p.isBestseller);
     }
 
-    // Category filter from dropdown
     if (categoryFilter !== 'All') {
       filtered = filtered.filter(p => p.category === categoryFilter);
     }
 
-    // Size filter
     if (sizeFilter) {
       filtered = filtered.filter(p => p.sizes && p.sizes.includes(sizeFilter));
     }
 
-    // Sorting
     if (sortBy === 'newest') {
       filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     } else if (sortBy === 'price-low') {
@@ -78,9 +72,8 @@ const AllProducts = ({ products, addToCart, loading }) => {
     toast.success(`${product.name} added to cart!`);
   };
 
-  // ✅ FIXED: Force fallback for all images
-  const getImageUrl = (imagePath) => {
-    // ALWAYS use fallback for now - since local images don't exist on Vercel
+  // ✅ FORCE FALLBACK IMAGE
+  const getImageUrl = () => {
     return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
   };
 
@@ -187,7 +180,7 @@ const AllProducts = ({ products, addToCart, loading }) => {
                 <Link to={`/product/${product._id}`} className="product-link">
                   <div className="product-image">
                     <img 
-                      src={getImageUrl(product.image)} 
+                      src={getImageUrl()} 
                       alt={product.name}
                       onError={(e) => {
                         e.target.onerror = null;
@@ -207,7 +200,6 @@ const AllProducts = ({ products, addToCart, loading }) => {
                   </Link>
                   <p className="product-price">₹{product.price?.toLocaleString() || product.price}</p>
                   
-                  {/* ✅ SHOW ALL SIZES */}
                   <div className="product-sizes">
                     {product.sizes && product.sizes.map((size) => (
                       <button

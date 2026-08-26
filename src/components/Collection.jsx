@@ -30,13 +30,8 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
     navigate('/products');
   };
 
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) {
-      return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
-    }
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-      return imagePath;
-    }
+  // ✅ FORCE FALLBACK IMAGE
+  const getImageUrl = () => {
     return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
   };
 
@@ -94,7 +89,7 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
               <Link to={`/product/${product._id}`} className="product-link">
                 <div className="product-image">
                   <img 
-                    src={getImageUrl(product.image)} 
+                    src={getImageUrl()} 
                     alt={product.name}
                     onError={(e) => {
                       e.target.onerror = null;

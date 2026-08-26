@@ -13,6 +13,7 @@ const ProductDetails = ({ products, addToCart }) => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const productList = Array.isArray(products) ? products : [];
 
@@ -25,78 +26,61 @@ const ProductDetails = ({ products, addToCart }) => {
         .slice(0, 4);
       setRelatedProducts(related);
       setCurrentImageIndex(0);
+      setLoading(false);
+    } else {
+      setLoading(false);
     }
   }, [id, productList]);
 
-  // Get all images
+  // ✅ FORCE FALLBACK IMAGE - Always use Unsplash
+  const getImageUrl = () => {
+    return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop';
+  };
+
+  // Get all images (main + additional) - all use fallback
   const getAllImages = () => {
-    if (!product) return [];
-    const images = [];
-    if (product.image) images.push(product.image);
-    if (product.images && Array.isArray(product.images)) {
-      images.push(...product.images);
-    }
-    return images;
+    // Always return fallback images array
+    return [
+      'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop',
+      'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=600&h=700&fit=crop',
+      'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&h=700&fit=crop'
+    ];
   };
 
   const allImages = getAllImages();
 
-  // ============================================
-  // Check if product is in stock
-  // ============================================
-  const isInStock = product && product.stock > 0;
-  const stockStatus = product && product.stock > 10 ? 'In Stock' : 
-                       product && product.stock > 0 ? `Only ${product.stock} left` : 
-                       'Out of Stock';
-  const stockClass = product && product.stock > 10 ? 'in-stock' : 
-                      product && product.stock > 0 ? 'low-stock' : 
-                      'out-of-stock';
-
-  // ============================================
-  // Add to Cart with stock check
-  // ============================================
   const handleAddToCart = () => {
     if (!selectedSize) {
       toast.error('Please select a size');
       return;
     }
-    
-    // Check stock before adding
-    if (!isInStock) {
+    if (product.stock <= 0) {
       toast.error('This product is out of stock');
       return;
     }
-    
     if (quantity > product.stock) {
       toast.error(`Only ${product.stock} items available in stock`);
       return;
     }
-    
     for (let i = 0; i < quantity; i++) {
       addToCart(product, selectedSize);
     }
     toast.success(`${product.name} added to cart!`);
   };
 
-  // ============================================
-  // Order Now with stock check
-  // ============================================
   const handleOrderNow = () => {
     if (!selectedSize) {
       toast.error('Please select a size');
       return;
     }
-    
-    if (!isInStock) {
+    if (product.stock <= 0) {
       toast.error('This product is out of stock');
       return;
     }
-    
     if (quantity > product.stock) {
       toast.error(`Only ${product.stock} items available in stock`);
       return;
     }
-    
     for (let i = 0; i < quantity; i++) {
       addToCart(product, selectedSize);
     }
@@ -111,11 +95,31 @@ const ProductDetails = ({ products, addToCart }) => {
     setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
   };
 
-  if (!product) {
+  // Check stock status
+  const isInStock = product && product.stock > 0;
+  const stockStatus = product && product.stock > 10 ? 'In Stock' : 
+                       product && product.stock > 0 ? `Only ${product.stock} left` : 
+                       'Out of Stock';
+  const stockClass = product && product.stock > 10 ? 'in-stock' : 
+                      product && product.stock > 0 ? 'low-stock' : 
+                      'out-of-stock';
+
+  if (loading) {
     return (
       <div className="product-details-loading">
         <div className="container">
           <p>Loading product...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="product-details-loading">
+        <div className="container">
+          <p>Product not found</p>
+          <button onClick={() => navigate('/products')}>Back to Products</button>
         </div>
       </div>
     );
@@ -139,8 +143,12 @@ const ProductDetails = ({ products, addToCart }) => {
             <div className="main-image-wrapper">
               <div className="main-image" onClick={() => setIsImageModalOpen(true)}>
                 <img 
-                  src={allImages[currentImageIndex] || product.image || 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop'} 
-                  alt={product.name} 
+                  src={getImageUrl()} 
+                  alt={product.name}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop';
+                  }}
                 />
                 {product.isNew && <span className="badge new">NEW</span>}
                 {product.isBestseller && <span className="badge bestseller">BESTSELLER</span>}
@@ -307,8 +315,12 @@ const ProductDetails = ({ products, addToCart }) => {
                 <Link to={`/product/${related._id}`} key={related._id} className="related-card">
                   <div className="related-image">
                     <img 
-                      src={related.image || 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=300&h=400&fit=crop'} 
-                      alt={related.name} 
+                      src="https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=300&h=400&fit=crop" 
+                      alt={related.name}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=300&h=400&fit=crop';
+                      }}
                     />
                     {related.stock <= 0 && (
                       <span className="out-of-stock-badge">Out of Stock</span>
@@ -335,8 +347,12 @@ const ProductDetails = ({ products, addToCart }) => {
             </button>
             <div className="image-modal-content">
               <img 
-                src={allImages[currentImageIndex]} 
-                alt={product.name} 
+                src={getImageUrl()} 
+                alt={product.name}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop';
+                }}
               />
               {allImages.length > 1 && (
                 <>
