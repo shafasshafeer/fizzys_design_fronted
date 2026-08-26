@@ -30,12 +30,12 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
     navigate('/products');
   };
 
-  // ✅ FORCE FALLBACK IMAGE
+  // ✅ ALWAYS USE FALLBACK IMAGE
+  const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
 
-
-const getImageUrl = () => {
-  return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
-};
+  const getImageUrl = () => {
+    return FALLBACK_IMAGE;
+  };
 
   if (loading) {
     return (
@@ -95,7 +95,7 @@ const getImageUrl = () => {
                     alt={product.name}
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
+                      e.target.src = FALLBACK_IMAGE;
                     }}
                   />
                   {getBadge(product) && (
