@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiShoppingCart, FiArrowRight } from 'react-icons/fi';
 import toast from 'react-hot-toast';
-import { getImageUrl } from '../utils/imageUtils';
 import './Collection.css';
 
 const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
@@ -31,6 +30,21 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
     navigate('/products');
   };
 
+  // ✅ DIRECT FIX: Hardcode the full backend URL
+  const getImageUrl = (imagePath) => {
+    // ALWAYS use backend URL with fallback
+    if (!imagePath) {
+      return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
+    }
+    // If it's a full URL, use it
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    // ✅ FORCE: Always use backend URL
+    const filename = imagePath.replace(/^\/uploads\//, '');
+    return `https://fizzys-design-backend.onrender.com/uploads/${filename}`;
+  };
+
   if (loading) {
     return (
       <section className="collection">
@@ -46,10 +60,6 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
       </section>
     );
   }
-
-
-  // In Collection.jsx, add this before the return:
-console.log('Collection - First product image:', productList[0]?.image);
 
   if (productList.length === 0) {
     return (
