@@ -29,7 +29,7 @@ const Cart = ({ cart, setCart }) => {
 
   const total = cart.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
 
-  // ✅ DIRECT FALLBACK IMAGE
+  // ✅ HARDCODED FALLBACK IMAGE
   const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=100&h=100&fit=crop';
 
   const updateQuantity = (id, size, change) => {

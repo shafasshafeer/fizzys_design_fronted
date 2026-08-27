@@ -30,7 +30,7 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
     navigate('/products');
   };
 
-  // ✅ DIRECT FALLBACK IMAGE - NO FUNCTION CALL
+  // ✅ HARDCODED FALLBACK IMAGE
   const IMAGE_URL = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
 
   if (loading) {
