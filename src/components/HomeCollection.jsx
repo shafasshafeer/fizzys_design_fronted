@@ -58,18 +58,8 @@ const HomeCollection = ({ products, addToCart, loading }) => {
     navigate('/products');
   };
 
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) {
-      return 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
-    }
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-      return imagePath;
-    }
-    if (imagePath.startsWith('/uploads')) {
-      return imagePath;
-    }
-    return `/uploads/${imagePath}`;
-  };
+  // ✅ FIXED: Always use fallback image
+  const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
 
   if (loading) {
     return (
@@ -146,11 +136,11 @@ const HomeCollection = ({ products, addToCart, loading }) => {
                 <Link to={`/product/${product._id}`} className="product-link">
                   <div className="product-image">
                     <img 
-                      src={getImageUrl(product.image)} 
+                      src={FALLBACK_IMAGE} 
                       alt={product.name}
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
+                        e.target.src = FALLBACK_IMAGE;
                       }}
                     />
                     {getBadge(product) && (
@@ -173,7 +163,6 @@ const HomeCollection = ({ products, addToCart, loading }) => {
                   </Link>
                   <p className="product-price">₹{product.price?.toLocaleString() || product.price}</p>
                   
-                  {/* ✅ SHOW ALL SIZES */}
                   <div className="product-sizes">
                     {product.sizes && product.sizes.map((size) => (
                       <button
