@@ -30,6 +30,9 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
     navigate('/products');
   };
 
+  // ✅ HARDCODED FALLBACK IMAGE
+  const IMAGE_URL = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
+
   if (loading) {
     return (
       <section className="collection">
@@ -83,9 +86,8 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
             <div className="product-card" key={product._id}>
               <Link to={`/product/${product._id}`} className="product-link">
                 <div className="product-image">
-                  {/* ✅ DIRECT IMAGE - NO VARIABLES */}
                   <img 
-                    src="https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop" 
+                    src={IMAGE_URL} 
                     alt={product.name}
                   />
                   {getBadge(product) && (
