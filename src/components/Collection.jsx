@@ -30,12 +30,8 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
     navigate('/products');
   };
 
-  // ✅ FINAL: ALWAYS use fallback image
+  // ✅ ALWAYS use fallback image
   const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
-  
-  const getImageUrl = () => {
-    return FALLBACK_IMAGE;
-  };
 
   if (loading) {
     return (
@@ -91,7 +87,7 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
               <Link to={`/product/${product._id}`} className="product-link">
                 <div className="product-image">
                   <img 
-                    src={getImageUrl()} 
+                    src={FALLBACK_IMAGE} 
                     alt={product.name}
                     onError={(e) => {
                       e.target.onerror = null;
