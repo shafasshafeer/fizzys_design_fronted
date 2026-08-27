@@ -32,16 +32,12 @@ const ProductDetails = ({ products, addToCart }) => {
     }
   }, [id, productList]);
 
-  // ✅ FORCE FALLBACK IMAGE
-  const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop';
-  const FALLBACK_IMAGE_2 = 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=600&h=700&fit=crop';
-  const FALLBACK_IMAGE_3 = 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&h=700&fit=crop';
+  // ✅ DIRECT FALLBACK IMAGES
+  const IMAGE_URL = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop';
+  const IMAGE_URL2 = 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=600&h=700&fit=crop';
+  const IMAGE_URL3 = 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&h=700&fit=crop';
 
-  const getImageUrl = () => {
-    return FALLBACK_IMAGE;
-  };
-
-  const allImages = [FALLBACK_IMAGE, FALLBACK_IMAGE_2, FALLBACK_IMAGE_3];
+  const allImages = [IMAGE_URL, IMAGE_URL2, IMAGE_URL3];
 
   const handleAddToCart = () => {
     if (!selectedSize) {
@@ -134,12 +130,8 @@ const ProductDetails = ({ products, addToCart }) => {
             <div className="main-image-wrapper">
               <div className="main-image" onClick={() => setIsImageModalOpen(true)}>
                 <img 
-                  src={getImageUrl()} 
+                  src={allImages[currentImageIndex]} 
                   alt={product.name}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = FALLBACK_IMAGE;
-                  }}
                 />
                 {product.isNew && <span className="badge new">NEW</span>}
                 {product.isBestseller && <span className="badge bestseller">BESTSELLER</span>}
@@ -169,7 +161,7 @@ const ProductDetails = ({ products, addToCart }) => {
                 {allImages.map((img, index) => (
                   <img 
                     key={index}
-                    src={getImageUrl()} 
+                    src={img} 
                     alt={`${product.name} ${index + 1}`} 
                     className={`thumbnail ${currentImageIndex === index ? 'active' : ''}`}
                     onClick={() => setCurrentImageIndex(index)}
@@ -297,12 +289,8 @@ const ProductDetails = ({ products, addToCart }) => {
                 <Link to={`/product/${related._id}`} key={related._id} className="related-card">
                   <div className="related-image">
                     <img 
-                      src={getImageUrl()} 
+                      src={IMAGE_URL} 
                       alt={related.name}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = FALLBACK_IMAGE;
-                      }}
                     />
                     {related.stock <= 0 && (
                       <span className="out-of-stock-badge">Out of Stock</span>
@@ -328,12 +316,8 @@ const ProductDetails = ({ products, addToCart }) => {
             </button>
             <div className="image-modal-content">
               <img 
-                src={getImageUrl()} 
+                src={allImages[currentImageIndex]} 
                 alt={product.name}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = FALLBACK_IMAGE;
-                }}
               />
               {allImages.length > 1 && (
                 <>
@@ -353,7 +337,7 @@ const ProductDetails = ({ products, addToCart }) => {
               {allImages.map((img, index) => (
                 <img 
                   key={index}
-                  src={getImageUrl()} 
+                  src={img} 
                   alt={`Thumbnail ${index + 1}`}
                   className={currentImageIndex === index ? 'active' : ''}
                   onClick={() => setCurrentImageIndex(index)}
