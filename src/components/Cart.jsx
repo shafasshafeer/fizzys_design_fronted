@@ -29,6 +29,9 @@ const Cart = ({ cart, setCart }) => {
 
   const total = cart.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
 
+  // ✅ FORCE FALLBACK IMAGE
+  const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=100&h=100&fit=crop';
+
   // ============================================
   // Update Quantity with stock check
   // ============================================
@@ -122,7 +125,6 @@ const Cart = ({ cart, setCart }) => {
   const placeOrder = async () => {
     if (!validateForm()) return;
 
-    // Check stock for all items
     for (const item of cart) {
       if (item.stock <= 0) {
         toast.error(`${item.name} is out of stock`);
@@ -175,11 +177,10 @@ const Cart = ({ cart, setCart }) => {
   };
 
   // ============================================
-  // ✅ SIMPLIFIED: Just submit and show WhatsApp message
+  // Submit Order
   // ============================================
   const submitOrder = async () => {
     try {
-      // Update order status to pending_verification
       await axios.put(`/api/orders/${orderId}/status`, {
         status: 'pending_verification',
         paymentStatus: 'pending',
@@ -189,21 +190,16 @@ const Cart = ({ cart, setCart }) => {
       
       toast.success('✅ Order submitted successfully!');
       
-      // Show WhatsApp message
       const whatsappNumber = formData.whatsapp;
-      const orderNumber = orderId?.slice(-8) || 'N/A';
       
-      // Show success message with WhatsApp info
       toast.success(
         `📱 Order confirmation will be sent to your WhatsApp: ${whatsappNumber}`,
         { duration: 8000 }
       );
       
-      // Clear cart
       setCart([]);
       localStorage.removeItem('cart');
       
-      // Reset and redirect
       setTimeout(() => {
         setStep(1);
         setShowQR(false);
@@ -248,7 +244,7 @@ const Cart = ({ cart, setCart }) => {
   }
 
   // ============================================
-  // Render: Payment Step (Simplified)
+  // Render: Payment Step
   // ============================================
   if (step === 3 && showQR) {
     return (
@@ -294,7 +290,6 @@ const Cart = ({ cart, setCart }) => {
                     <p><strong>Order ID:</strong> #{orderId?.slice(-8) || 'N/A'}</p>
                   </div>
                   
-                  {/* ✅ Simple Submit Button - No Reference Number */}
                   <button 
                     className="submit-order-btn"
                     onClick={submitOrder}
@@ -349,13 +344,12 @@ const Cart = ({ cart, setCart }) => {
           <h2 className="cart-title">Checkout</h2>
           
           <div className="checkout-grid">
-            {/* Order Summary */}
             <div className="checkout-summary">
               <h3>Order Summary</h3>
               <div className="checkout-items">
                 {cart.map((item) => (
                   <div className="checkout-item" key={`${item._id}-${item.size}`}>
-                    <img src={item.image || 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=60&h=60&fit=crop'} alt={item.name} />
+                    <img src={FALLBACK_IMAGE} alt={item.name} />
                     <div className="checkout-item-info">
                       <h4>{item.name}</h4>
                       <p>Size: {item.size} × {item.quantity}</p>
@@ -383,7 +377,6 @@ const Cart = ({ cart, setCart }) => {
               </div>
             </div>
 
-            {/* Delivery Details Form */}
             <div className="checkout-form">
               <h3>Delivery Details</h3>
               
@@ -542,7 +535,7 @@ const Cart = ({ cart, setCart }) => {
           <div className="cart-items">
             {cart.map((item) => (
               <div className="cart-item" key={`${item._id}-${item.size}`}>
-                <img src={item.image || 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=100&h=100&fit=crop'} alt={item.name} />
+                <img src={FALLBACK_IMAGE} alt={item.name} />
                 
                 <div className="cart-item-info">
                   <h3>{item.name}</h3>

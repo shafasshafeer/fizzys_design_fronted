@@ -11,7 +11,6 @@ const HomeCollection = ({ products, addToCart, loading }) => {
   const [viewMode, setViewMode] = useState('grid');
   const navigate = useNavigate();
 
-  // Category list with icons
   const categories = [
     { id: 'all', label: 'All Products', icon: '✦' },
     { id: '2-Piece Cord Sets', label: '2-Piece Cord Sets', icon: '👗' },
@@ -24,17 +23,13 @@ const HomeCollection = ({ products, addToCart, loading }) => {
     { id: 'Crop Tops', label: 'Crop Tops', icon: '👕' },
   ];
 
-  // Ensure products is always an array
   const productList = Array.isArray(products) ? products : [];
 
   useEffect(() => {
     let filtered = [...productList];
-    
-    // Filter by category
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(p => p.category === selectedCategory);
     }
-    
     setFilteredProducts(filtered);
   }, [selectedCategory, productList]);
 
@@ -58,8 +53,12 @@ const HomeCollection = ({ products, addToCart, loading }) => {
     navigate('/products');
   };
 
-  // ✅ FIXED: Always use fallback image
+  // ✅ FORCE FALLBACK IMAGE
   const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
+  
+  const getImageUrl = () => {
+    return FALLBACK_IMAGE;
+  };
 
   if (loading) {
     return (
@@ -106,7 +105,6 @@ const HomeCollection = ({ products, addToCart, loading }) => {
           </div>
         </div>
 
-        {/* Category Filter */}
         <div className="category-filter">
           <div className="category-scroll">
             {categories.map((category) => (
@@ -136,7 +134,7 @@ const HomeCollection = ({ products, addToCart, loading }) => {
                 <Link to={`/product/${product._id}`} className="product-link">
                   <div className="product-image">
                     <img 
-                      src={FALLBACK_IMAGE} 
+                      src={getImageUrl()} 
                       alt={product.name}
                       onError={(e) => {
                         e.target.onerror = null;
@@ -189,7 +187,6 @@ const HomeCollection = ({ products, addToCart, loading }) => {
           </div>
         )}
 
-        {/* View All Button */}
         {filteredProducts.length > 0 && (
           <div className="collection-bottom">
             <button className="view-all-bottom-btn" onClick={handleViewAll}>
