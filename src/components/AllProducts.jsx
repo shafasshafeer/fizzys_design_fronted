@@ -72,7 +72,7 @@ const AllProducts = ({ products, addToCart, loading }) => {
     toast.success(`${product.name} added to cart!`);
   };
 
-  // ✅ HARDCODED FALLBACK IMAGE
+  // ✅ DIRECT FALLBACK IMAGE
   const IMAGE_URL = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
 
   if (loading) {
