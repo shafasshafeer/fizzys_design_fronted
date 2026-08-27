@@ -9,6 +9,7 @@ import {
 } from 'react-icons/fi';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../../utils/imageUtils';
 import './AdminPanel.css';
 
 const AdminPanel = () => {
@@ -571,7 +572,7 @@ const AdminPanel = () => {
         )}
 
         {/* ============================================
-            PRODUCTS TAB
+            PRODUCTS TAB - FIXED IMAGES
         ============================================ */}
         {activeTab === 'products' && (
           <div className="admin-table-wrapper">
@@ -603,7 +604,16 @@ const AdminPanel = () => {
                   products.map((product) => (
                     <tr key={product._id}>
                       <td>
-                        <img src={product.image || 'https://via.placeholder.com/50x50'} alt={product.name} className="admin-product-img" />
+                        {/* ✅ FIXED: Use getImageUrl for admin images */}
+                        <img 
+                          src={getImageUrl(product.image)} 
+                          alt={product.name} 
+                          className="admin-product-img"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=50&h=50&fit=crop';
+                          }}
+                        />
                       </td>
                       <td><strong>{product.name}</strong></td>
                       <td>₹{product.price?.toLocaleString() || product.price}</td>
@@ -744,7 +754,7 @@ const AdminPanel = () => {
                       <tr key={index}>
                         <td>
                           <div className="order-item-product">
-                            {item.image && <img src={item.image} alt={item.name} className="order-item-img" />}
+                            {item.image && <img src={getImageUrl(item.image)} alt={item.name} className="order-item-img" />}
                             <span>{item.name}</span>
                           </div>
                         </td>
