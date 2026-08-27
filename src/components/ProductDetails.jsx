@@ -32,7 +32,7 @@ const ProductDetails = ({ products, addToCart }) => {
     }
   }, [id, productList]);
 
-  // ✅ FALLBACK IMAGES
+  // ✅ HARDCODED FALLBACK IMAGES
   const IMAGE1 = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop';
   const IMAGE2 = 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=600&h=700&fit=crop';
   const IMAGE3 = 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&h=700&fit=crop';
