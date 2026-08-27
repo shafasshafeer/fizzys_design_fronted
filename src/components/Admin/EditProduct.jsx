@@ -56,20 +56,33 @@ const EditProduct = ({ fetchProducts }) => {
             category: product.category || 'ethnic'
           });
           
-          // Set preview images
+          // Set preview images - store URLs as-is, don't convert to base64
           const previews = [];
           if (product.image) {
-            previews.push({ url: product.image, isMain: true, isExisting: true });
+            previews.push({ 
+              url: product.image, 
+              isMain: true, 
+              isExisting: true,
+              isNew: false,
+              file: null
+            });
           }
           if (product.images && product.images.length > 0) {
             product.images.forEach(img => {
-              previews.push({ url: img, isMain: false, isExisting: true });
+              previews.push({ 
+                url: img, 
+                isMain: false, 
+                isExisting: true,
+                isNew: false,
+                file: null
+              });
             });
           }
           setPreviewImages(previews);
         }
         setLoading(false);
       } catch (error) {
+        console.error('❌ Error fetching product:', error);
         toast.error('Failed to load product');
         navigate('/admin');
       }
@@ -115,11 +128,20 @@ const EditProduct = ({ fetchProducts }) => {
         return;
       }
       
+      // Read file for preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImages(prev => {
+          // Remove existing main image
           const filtered = prev.filter(p => !p.isMain);
-          return [{ url: reader.result, file, isMain: true, isNew: true }, ...filtered];
+          // Add new main image with file reference
+          return [{ 
+            url: reader.result, 
+            file: file,
+            isMain: true, 
+            isNew: true,
+            isExisting: false
+          }, ...filtered];
         });
       };
       reader.readAsDataURL(file);
@@ -157,7 +179,13 @@ const EditProduct = ({ fetchProducts }) => {
       const reader = new FileReader();
       return new Promise((resolve) => {
         reader.onloadend = () => {
-          resolve({ url: reader.result, file, isMain: false, isNew: true });
+          resolve({ 
+            url: reader.result, 
+            file: file,
+            isMain: false, 
+            isNew: true,
+            isExisting: false
+          });
         };
         reader.readAsDataURL(file);
       });
@@ -176,11 +204,19 @@ const EditProduct = ({ fetchProducts }) => {
   // Remove Image
   // ============================================
   const removeImage = (index) => {
-    setPreviewImages(prev => prev.filter((_, i) => i !== index));
+    setPreviewImages(prev => {
+      const newPreviews = prev.filter((_, i) => i !== index);
+      // If we removed the main image and there are others, make the first one main
+      const hasMain = newPreviews.some(p => p.isMain);
+      if (!hasMain && newPreviews.length > 0) {
+        newPreviews[0].isMain = true;
+      }
+      return newPreviews;
+    });
   };
 
   // ============================================
-  // ✅ HANDLE SUBMIT - Save Product
+  // Handle Submit - Save Product
   // ============================================
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -190,24 +226,63 @@ const EditProduct = ({ fetchProducts }) => {
       return;
     }
 
+    // Check if we have at least one image (either existing or new)
+    if (previewImages.length === 0) {
+      toast.error('Please add at least one image');
+      return;
+    }
+
     setSaving(true);
     try {
       const formDataToSend = new FormData();
+      
+      // Basic fields
       formDataToSend.append('name', formData.name);
-      formDataToSend.append('price', formData.price);
+      formDataToSend.append('price', String(formData.price));
       formDataToSend.append('description', formData.description || '');
       formDataToSend.append('sizes', JSON.stringify(formData.sizes));
       formDataToSend.append('category', formData.category);
-      formDataToSend.append('stock', formData.stock);
-      formDataToSend.append('isNew', formData.isNew);
-      formDataToSend.append('isBestseller', formData.isBestseller);
+      formDataToSend.append('stock', String(formData.stock));
+      formDataToSend.append('isNew', String(formData.isNew));
+      formDataToSend.append('isBestseller', String(formData.isBestseller));
       
-      // Handle images - only send new ones
-      const newImages = previewImages.filter(p => p.isNew);
-      newImages.forEach((img) => {
+      // Log what we're sending
+      console.log('📤 Sending update for product:', id);
+      console.log('📋 Form data:', {
+        name: formData.name,
+        price: formData.price,
+        category: formData.category,
+        sizes: formData.sizes
+      });
+      
+      // Handle images - ONLY send NEW images that have actual files
+      const newImages = previewImages.filter(p => p.isNew && p.file);
+      console.log('📸 New images to upload:', newImages.length);
+      
+      // Main image
+      const mainImage = newImages.find(p => p.isMain);
+      if (mainImage && mainImage.file) {
+        formDataToSend.append('image', mainImage.file);
+        console.log('📸 Uploading new main image');
+      }
+      
+      // Additional images
+      const additionalImages = newImages.filter(p => !p.isMain);
+      additionalImages.forEach((img) => {
         if (img.file) {
-          formDataToSend.append(img.isMain ? 'image' : 'images', img.file);
+          formDataToSend.append('images', img.file);
+          console.log('📸 Uploading additional image');
         }
+      });
+
+      // If there are existing images and no new ones, we keep them
+      // The backend will keep the existing image URLs if no new files are uploaded
+      const hasExistingMain = previewImages.some(p => p.isMain && p.isExisting);
+      const hasExistingAdditional = previewImages.some(p => !p.isMain && p.isExisting);
+      
+      console.log('📸 Existing images:', {
+        main: hasExistingMain,
+        additional: hasExistingAdditional
       });
 
       const response = await axios.put(`/api/products/${id}`, formDataToSend, {
@@ -217,13 +292,14 @@ const EditProduct = ({ fetchProducts }) => {
       });
 
       if (response.data.success) {
-        toast.success('Product updated successfully!');
+        toast.success('Product updated successfully! 🎉');
         if (fetchProducts) fetchProducts();
         navigate('/admin');
       }
     } catch (error) {
+      console.error('❌ Error updating product:', error);
+      console.error('❌ Response data:', error.response?.data);
       toast.error(error.response?.data?.message || 'Failed to update product');
-      console.error('Error:', error);
     } finally {
       setSaving(false);
     }
@@ -253,6 +329,7 @@ const EditProduct = ({ fetchProducts }) => {
         </div>
         
         <form onSubmit={handleSubmit} className="product-form">
+          {/* Product Name */}
           <div className="form-group">
             <label>Product Name *</label>
             <input
@@ -265,6 +342,7 @@ const EditProduct = ({ fetchProducts }) => {
             />
           </div>
 
+          {/* Price and Stock */}
           <div className="form-row">
             <div className="form-group">
               <label>Price (₹) *</label>
@@ -276,6 +354,7 @@ const EditProduct = ({ fetchProducts }) => {
                 placeholder="Enter price"
                 required
                 min="0"
+                step="0.01"
               />
             </div>
             <div className="form-group">
@@ -291,6 +370,7 @@ const EditProduct = ({ fetchProducts }) => {
             </div>
           </div>
 
+          {/* Description */}
           <div className="form-group">
             <label>Description</label>
             <textarea
@@ -302,6 +382,7 @@ const EditProduct = ({ fetchProducts }) => {
             />
           </div>
 
+          {/* Category */}
           <div className="form-group">
             <label>Category</label>
             <select
@@ -327,10 +408,12 @@ const EditProduct = ({ fetchProducts }) => {
                 <div className={`image-upload-box ${index === 0 ? 'main-image-box' : ''}`} key={index}>
                   {previewImages[index] ? (
                     <div className="image-preview">
-                      {/* ✅ FIXED: Using getImageUrl */}
                       <img 
                         src={getImageUrl(previewImages[index].url)} 
-                        alt={index === 0 ? 'Main' : `Additional ${index}`} 
+                        alt={index === 0 ? 'Main' : `Additional ${index}`}
+                        onError={(e) => {
+                          e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
+                        }}
                       />
                       <button 
                         type="button" 
@@ -342,6 +425,9 @@ const EditProduct = ({ fetchProducts }) => {
                       <span className="image-label">{index === 0 ? 'Main' : `#${index}`}</span>
                       {previewImages[index].isNew && (
                         <span className="image-badge-new">New</span>
+                      )}
+                      {previewImages[index].isExisting && (
+                        <span className="image-badge-existing">Saved</span>
                       )}
                     </div>
                   ) : (
@@ -400,6 +486,7 @@ const EditProduct = ({ fetchProducts }) => {
             </label>
           </div>
 
+          {/* Form Actions */}
           <div className="form-actions">
             <button type="button" onClick={() => navigate('/admin')} className="cancel-btn">
               Cancel
