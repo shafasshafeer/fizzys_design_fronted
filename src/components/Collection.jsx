@@ -30,12 +30,8 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
     navigate('/products');
   };
 
-  // ✅ FORCE FALLBACK IMAGE
+  // ✅ DIRECT FALLBACK IMAGE
   const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
-  
-  const getImageUrl = () => {
-    return FALLBACK_IMAGE;
-  };
 
   if (loading) {
     return (
@@ -91,12 +87,8 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
               <Link to={`/product/${product._id}`} className="product-link">
                 <div className="product-image">
                   <img 
-                    src={getImageUrl()} 
+                    src={FALLBACK_IMAGE} 
                     alt={product.name}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = FALLBACK_IMAGE;
-                    }}
                   />
                   {getBadge(product) && (
                     <span className={`product-badge ${product.isNew ? 'new' : 'bestseller'}`}>

@@ -73,7 +73,7 @@ const AllProducts = ({ products, addToCart, loading }) => {
   };
 
   // ✅ DIRECT FALLBACK IMAGE
-  const IMAGE_URL = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
+  const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
 
   if (loading) {
     return (
@@ -178,7 +178,7 @@ const AllProducts = ({ products, addToCart, loading }) => {
                 <Link to={`/product/${product._id}`} className="product-link">
                   <div className="product-image">
                     <img 
-                      src={IMAGE_URL} 
+                      src={FALLBACK_IMAGE} 
                       alt={product.name}
                     />
                     {product.isNew && <span className="product-badge new">NEW</span>}

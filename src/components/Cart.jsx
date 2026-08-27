@@ -29,12 +29,9 @@ const Cart = ({ cart, setCart }) => {
 
   const total = cart.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
 
-  // ✅ FORCE FALLBACK IMAGE
+  // ✅ DIRECT FALLBACK IMAGE
   const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=100&h=100&fit=crop';
 
-  // ============================================
-  // Update Quantity with stock check
-  // ============================================
   const updateQuantity = (id, size, change) => {
     setCart(cart.map(item => {
       if (item._id === id && item.size === size) {
@@ -50,17 +47,11 @@ const Cart = ({ cart, setCart }) => {
     }).filter(Boolean));
   };
 
-  // ============================================
-  // Remove Item
-  // ============================================
   const removeItem = (id, size) => {
     setCart(cart.filter(item => !(item._id === id && item.size === size)));
     toast.success('Item removed from cart');
   };
 
-  // ============================================
-  // Handle Form Change
-  // ============================================
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name.includes('.')) {
@@ -80,9 +71,6 @@ const Cart = ({ cart, setCart }) => {
     }
   };
 
-  // ============================================
-  // Validate Form
-  // ============================================
   const validateForm = () => {
     if (!formData.name.trim()) {
       toast.error('Please enter your name');
@@ -119,9 +107,6 @@ const Cart = ({ cart, setCart }) => {
     return true;
   };
 
-  // ============================================
-  // Place Order - Show QR Code
-  // ============================================
   const placeOrder = async () => {
     if (!validateForm()) return;
 
@@ -176,9 +161,6 @@ const Cart = ({ cart, setCart }) => {
     }
   };
 
-  // ============================================
-  // Submit Order
-  // ============================================
   const submitOrder = async () => {
     try {
       await axios.put(`/api/orders/${orderId}/status`, {
@@ -226,9 +208,6 @@ const Cart = ({ cart, setCart }) => {
     }
   };
 
-  // ============================================
-  // Render: Empty Cart
-  // ============================================
   if (cart.length === 0 && step === 1) {
     return (
       <div className="cart-empty">
@@ -243,9 +222,6 @@ const Cart = ({ cart, setCart }) => {
     );
   }
 
-  // ============================================
-  // Render: Payment Step
-  // ============================================
   if (step === 3 && showQR) {
     return (
       <div className="cart-page payment-page">
@@ -334,9 +310,6 @@ const Cart = ({ cart, setCart }) => {
     );
   }
 
-  // ============================================
-  // Render: Checkout Step
-  // ============================================
   if (step === 2) {
     return (
       <div className="cart-page checkout-page">
@@ -523,9 +496,6 @@ const Cart = ({ cart, setCart }) => {
     );
   }
 
-  // ============================================
-  // Render: Cart View
-  // ============================================
   return (
     <div className="cart-page">
       <div className="container">
