@@ -3,6 +3,7 @@ import { FiTrash2, FiPlus, FiMinus, FiCreditCard, FiUser, FiPhone, FiMapPin, FiM
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getImageUrl } from '../utils/imageUtils';
 import './Cart.css';
 
 const Cart = ({ cart, setCart }) => {
@@ -28,9 +29,6 @@ const Cart = ({ cart, setCart }) => {
   });
 
   const total = cart.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
-
-  // ✅ HARDCODED FALLBACK IMAGE
-  const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=100&h=100&fit=crop';
 
   const updateQuantity = (id, size, change) => {
     setCart(cart.map(item => {
@@ -322,7 +320,7 @@ const Cart = ({ cart, setCart }) => {
               <div className="checkout-items">
                 {cart.map((item) => (
                   <div className="checkout-item" key={`${item._id}-${item.size}`}>
-                    <img src={FALLBACK_IMAGE} alt={item.name} />
+                    <img src={getImageUrl(item.image)} alt={item.name} />
                     <div className="checkout-item-info">
                       <h4>{item.name}</h4>
                       <p>Size: {item.size} × {item.quantity}</p>
@@ -505,7 +503,7 @@ const Cart = ({ cart, setCart }) => {
           <div className="cart-items">
             {cart.map((item) => (
               <div className="cart-item" key={`${item._id}-${item.size}`}>
-                <img src={FALLBACK_IMAGE} alt={item.name} />
+                <img src={getImageUrl(item.image)} alt={item.name} />
                 
                 <div className="cart-item-info">
                   <h3>{item.name}</h3>

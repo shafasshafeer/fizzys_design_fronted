@@ -1,6 +1,6 @@
 // client/src/utils/imageUtils.js
 
-// ✅ HARDCODE the backend URL - this MUST be correct
+// ✅ BACKEND URL - where your images are stored
 const BACKEND_URL = 'https://fizzys-design-backend.onrender.com';
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
 
@@ -22,9 +22,12 @@ export const getImageUrl = (imagePath) => {
   // ✅ FORCE: Always use backend URL with /uploads/
   // Remove any leading slashes or /uploads/ prefix
   let cleanPath = imagePath;
+  
+  // Remove /uploads/ prefix if present
   if (cleanPath.startsWith('/uploads/')) {
     cleanPath = cleanPath.replace('/uploads/', '');
   }
+  // Remove leading slash if present
   if (cleanPath.startsWith('/')) {
     cleanPath = cleanPath.substring(1);
   }
@@ -33,6 +36,7 @@ export const getImageUrl = (imagePath) => {
     cleanPath = cleanPath.replace('/uploads/', '');
   }
   
+  // Build the full URL with backend
   const fullUrl = `${BACKEND_URL}/uploads/${cleanPath}`;
   console.log('✅ Generated URL:', fullUrl);
   return fullUrl;

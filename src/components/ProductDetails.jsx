@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FiShoppingCart, FiHeart, FiShare2, FiChevronLeft, FiChevronRight, FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/imageUtils';
 import './ProductDetails.css';
 
 const ProductDetails = ({ products, addToCart }) => {
@@ -32,12 +33,23 @@ const ProductDetails = ({ products, addToCart }) => {
     }
   }, [id, productList]);
 
-  // ✅ HARDCODED FALLBACK IMAGES
-  const IMAGE1 = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop';
-  const IMAGE2 = 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=600&h=700&fit=crop';
-  const IMAGE3 = 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&h=700&fit=crop';
+  const getAllImages = () => {
+    const images = [];
+    if (product) {
+      if (product.image) images.push(product.image);
+      if (product.images && Array.isArray(product.images)) {
+        images.push(...product.images);
+      }
+    }
+    if (images.length === 0) {
+      images.push('https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop');
+      images.push('https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=600&h=700&fit=crop');
+      images.push('https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&h=700&fit=crop');
+    }
+    return images;
+  };
 
-  const allImages = [IMAGE1, IMAGE2, IMAGE3];
+  const allImages = getAllImages();
 
   const handleAddToCart = () => {
     if (!selectedSize) {
@@ -130,8 +142,12 @@ const ProductDetails = ({ products, addToCart }) => {
             <div className="main-image-wrapper">
               <div className="main-image" onClick={() => setIsImageModalOpen(true)}>
                 <img 
-                  src={allImages[currentImageIndex]} 
+                  src={getImageUrl(allImages[currentImageIndex])} 
                   alt={product.name}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop';
+                  }}
                 />
                 {product.isNew && <span className="badge new">NEW</span>}
                 {product.isBestseller && <span className="badge bestseller">BESTSELLER</span>}
@@ -161,7 +177,7 @@ const ProductDetails = ({ products, addToCart }) => {
                 {allImages.map((img, index) => (
                   <img 
                     key={index}
-                    src={img} 
+                    src={getImageUrl(img)} 
                     alt={`${product.name} ${index + 1}`} 
                     className={`thumbnail ${currentImageIndex === index ? 'active' : ''}`}
                     onClick={() => setCurrentImageIndex(index)}
@@ -289,8 +305,12 @@ const ProductDetails = ({ products, addToCart }) => {
                 <Link to={`/product/${related._id}`} key={related._id} className="related-card">
                   <div className="related-image">
                     <img 
-                      src={IMAGE1} 
+                      src={getImageUrl(related.image)} 
                       alt={related.name}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=300&h=400&fit=crop';
+                      }}
                     />
                     {related.stock <= 0 && (
                       <span className="out-of-stock-badge">Out of Stock</span>
@@ -316,8 +336,12 @@ const ProductDetails = ({ products, addToCart }) => {
             </button>
             <div className="image-modal-content">
               <img 
-                src={allImages[currentImageIndex]} 
+                src={getImageUrl(allImages[currentImageIndex])} 
                 alt={product.name}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop';
+                }}
               />
               {allImages.length > 1 && (
                 <>
@@ -337,7 +361,7 @@ const ProductDetails = ({ products, addToCart }) => {
               {allImages.map((img, index) => (
                 <img 
                   key={index}
-                  src={img} 
+                  src={getImageUrl(img)} 
                   alt={`Thumbnail ${index + 1}`}
                   className={currentImageIndex === index ? 'active' : ''}
                   onClick={() => setCurrentImageIndex(index)}

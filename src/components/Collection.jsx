@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiShoppingCart, FiArrowRight } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/imageUtils';
 import './Collection.css';
 
 const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
@@ -29,9 +30,6 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
   const handleViewAll = () => {
     navigate('/products');
   };
-
-  // ✅ HARDCODED FALLBACK IMAGE - WILL NEVER 404
-  const IMAGE_URL = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
 
   if (loading) {
     return (
@@ -86,10 +84,13 @@ const Collection = ({ products, addToCart, loading, showViewAll = false }) => {
             <div className="product-card" key={product._id}>
               <Link to={`/product/${product._id}`} className="product-link">
                 <div className="product-image">
-                  {/* ✅ DIRECT FALLBACK IMAGE - NO VARIABLES */}
                   <img 
-                    src={IMAGE_URL} 
+                    src={getImageUrl(product.image)} 
                     alt={product.name}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
+                    }}
                   />
                   {getBadge(product) && (
                     <span className={`product-badge ${product.isNew ? 'new' : 'bestseller'}`}>
