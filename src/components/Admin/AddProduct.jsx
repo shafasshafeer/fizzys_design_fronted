@@ -9,6 +9,10 @@ const AddProduct = ({ fetchProducts }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [previewImages, setPreviewImages] = useState([]);
+  
+  // ✅ NEW: Size stock state
+  const [sizeStock, setSizeStock] = useState({});
+  
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -18,7 +22,7 @@ const AddProduct = ({ fetchProducts }) => {
     images: [],
     isNew: false,
     isBestseller: false,
-    stock: 10,
+    stock: 0,
     category: 'ethnic'
   });
 
@@ -47,18 +51,47 @@ const AddProduct = ({ fetchProducts }) => {
     });
   };
 
+  // ✅ Updated: Handle size toggle with stock initialization
   const handleSizeToggle = (size) => {
+    const newSizes = formData.sizes.includes(size)
+      ? formData.sizes.filter(s => s !== size)
+      : [...formData.sizes, size];
+    
+    // Update sizes
     setFormData({
       ...formData,
-      sizes: formData.sizes.includes(size)
-        ? formData.sizes.filter(s => s !== size)
-        : [...formData.sizes, size]
+      sizes: newSizes
+    });
+    
+    // Update sizeStock - add new sizes with 0 stock, remove unchecked sizes
+    const newStock = { ...sizeStock };
+    if (newSizes.includes(size) && !(size in newStock)) {
+      newStock[size] = 0;
+    } else if (!newSizes.includes(size)) {
+      delete newStock[size];
+    }
+    setSizeStock(newStock);
+  };
+
+  // ✅ NEW: Handle Size Stock Change
+  const handleSizeStockChange = (size, value) => {
+    const stockValue = parseInt(value) || 0;
+    setSizeStock({
+      ...sizeStock,
+      [size]: stockValue
     });
   };
 
-  // ============================================
+  // ✅ NEW: Calculate total stock
+  const calculateTotalStock = () => {
+    let total = 0;
+    for (const size in sizeStock) {
+      total += sizeStock[size] || 0;
+    }
+    return total;
+  };
+
   // Handle Main Image Upload
-  // ============================================
   const handleMainImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -86,9 +119,7 @@ const AddProduct = ({ fetchProducts }) => {
     }
   };
 
-  // ============================================
   // Handle Additional Images Upload
-  // ============================================
   const handleAdditionalImagesUpload = (e) => {
     const files = Array.from(e.target.files);
     const validFiles = files.filter(file => {
@@ -136,9 +167,7 @@ const AddProduct = ({ fetchProducts }) => {
     });
   };
 
-  // ============================================
   // Remove Image
-  // ============================================
   const removeImage = (index) => {
     setPreviewImages(prev => prev.filter((_, i) => i !== index));
     if (index === 0) {
@@ -152,7 +181,7 @@ const AddProduct = ({ fetchProducts }) => {
   };
 
   // ============================================
-  // Handle Submit - Sends to Cloudinary
+  // ✅ Updated: Handle Submit - with sizeStock
   // ============================================
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -167,6 +196,14 @@ const AddProduct = ({ fetchProducts }) => {
       return;
     }
 
+    // ✅ Validate size stock
+    for (const size of formData.sizes) {
+      if (!(size in sizeStock) || sizeStock[size] < 0) {
+        toast.error(`Please set valid stock for size ${size}`);
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       const formDataToSend = new FormData();
@@ -175,11 +212,21 @@ const AddProduct = ({ fetchProducts }) => {
       formDataToSend.append('description', formData.description || '');
       formDataToSend.append('sizes', JSON.stringify(formData.sizes));
       formDataToSend.append('category', formData.category);
-      formDataToSend.append('stock', String(formData.stock));
       formDataToSend.append('isNew', String(formData.isNew));
       formDataToSend.append('isBestseller', String(formData.isBestseller));
       
-      // ✅ Send image files for Cloudinary upload
+      // ✅ Send sizeStock as JSON
+      formDataToSend.append('sizeStock', JSON.stringify(sizeStock));
+      
+      // ✅ Calculate and send total stock
+      const totalStock = calculateTotalStock();
+      formDataToSend.append('stock', String(totalStock));
+      
+      console.log('📤 Adding new product...');
+      console.log('📋 Size Stock:', sizeStock);
+      console.log('📋 Total Stock:', totalStock);
+      
+      // Send image files for Cloudinary upload
       if (formData.image) {
         formDataToSend.append('image', formData.image);
       }
@@ -197,12 +244,12 @@ const AddProduct = ({ fetchProducts }) => {
       });
 
       if (response.data.success) {
-        toast.success('Product added successfully!');
+        toast.success('Product added successfully! 🎉');
         if (fetchProducts) fetchProducts();
         navigate('/admin');
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('❌ Error:', error);
       toast.error(error.response?.data?.message || 'Failed to add product');
     } finally {
       setLoading(false);
@@ -237,17 +284,6 @@ const AddProduct = ({ fetchProducts }) => {
                 onChange={handleChange}
                 placeholder="Enter price"
                 required
-                min="0"
-              />
-            </div>
-            <div className="form-group">
-              <label>Stock Quantity</label>
-              <input
-                type="number"
-                name="stock"
-                value={formData.stock}
-                onChange={handleChange}
-                placeholder="Enter stock"
                 min="0"
               />
             </div>
@@ -361,6 +397,31 @@ const AddProduct = ({ fetchProducts }) => {
               ))}
             </div>
           </div>
+
+          {/* ✅ NEW: Size Stock Input */}
+          {formData.sizes.length > 0 && (
+            <div className="form-group">
+              <label>Stock by Size *</label>
+              <p className="form-helper">Enter stock quantity for each size</p>
+              <div className="size-stock-grid">
+                {formData.sizes.map((size) => (
+                  <div className="size-stock-item" key={size}>
+                    <label>{size}</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={sizeStock[size] || 0}
+                      onChange={(e) => handleSizeStockChange(size, e.target.value)}
+                      placeholder="0"
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="total-stock-display">
+                <strong>Total Stock:</strong> <span className="stock-count">{calculateTotalStock()}</span> units
+              </div>
+            </div>
+          )}
 
           {/* Status Checkboxes */}
           <div className="form-group checkbox-group">
