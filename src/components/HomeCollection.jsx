@@ -127,9 +127,14 @@ const HomeCollection = ({ products, addToCart, loading }) => {
               <div className={`product-card ${viewMode === 'list' ? 'list-card' : ''}`} key={product._id}>
                 <Link to={`/product/${product._id}`} className="product-link">
                   <div className="product-image">
+                    {/* ✅ OPTIMIZED IMAGE */}
                     <img 
                       src={getImageUrl(product.image)} 
                       alt={product.name}
+                      loading="lazy"
+                      decoding="async"
+                      width="400"
+                      height="500"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';

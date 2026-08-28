@@ -141,9 +141,14 @@ const ProductDetails = ({ products, addToCart }) => {
           <div className="product-image-section">
             <div className="main-image-wrapper">
               <div className="main-image" onClick={() => setIsImageModalOpen(true)}>
+                {/* ✅ OPTIMIZED MAIN IMAGE */}
                 <img 
                   src={getImageUrl(allImages[currentImageIndex])} 
                   alt={product.name}
+                  loading="eager"
+                  decoding="async"
+                  width="600"
+                  height="700"
                   onError={(e) => {
                     e.target.onerror = null;
                     e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop';
@@ -178,9 +183,13 @@ const ProductDetails = ({ products, addToCart }) => {
                   <img 
                     key={index}
                     src={getImageUrl(img)} 
-                    alt={`${product.name} ${index + 1}`} 
+                    alt={`${product.name} ${index + 1}`}
                     className={`thumbnail ${currentImageIndex === index ? 'active' : ''}`}
                     onClick={() => setCurrentImageIndex(index)}
+                    loading="lazy"
+                    decoding="async"
+                    width="80"
+                    height="80"
                   />
                 ))}
               </div>
@@ -304,9 +313,14 @@ const ProductDetails = ({ products, addToCart }) => {
               {relatedProducts.map((related) => (
                 <Link to={`/product/${related._id}`} key={related._id} className="related-card">
                   <div className="related-image">
+                    {/* ✅ OPTIMIZED RELATED PRODUCT IMAGE */}
                     <img 
                       src={getImageUrl(related.image)} 
                       alt={related.name}
+                      loading="lazy"
+                      decoding="async"
+                      width="300"
+                      height="400"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=300&h=400&fit=crop';
@@ -335,9 +349,14 @@ const ProductDetails = ({ products, addToCart }) => {
               <FiX />
             </button>
             <div className="image-modal-content">
+              {/* ✅ OPTIMIZED MODAL IMAGE */}
               <img 
                 src={getImageUrl(allImages[currentImageIndex])} 
                 alt={product.name}
+                loading="eager"
+                decoding="async"
+                width="800"
+                height="900"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=700&fit=crop';
@@ -365,6 +384,10 @@ const ProductDetails = ({ products, addToCart }) => {
                   alt={`Thumbnail ${index + 1}`}
                   className={currentImageIndex === index ? 'active' : ''}
                   onClick={() => setCurrentImageIndex(index)}
+                  loading="lazy"
+                  decoding="async"
+                  width="80"
+                  height="80"
                 />
               ))}
             </div>

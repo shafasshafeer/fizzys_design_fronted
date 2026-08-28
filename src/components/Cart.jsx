@@ -246,6 +246,10 @@ const Cart = ({ cart, setCart }) => {
                   <img 
                     src="/images/qr-code.png" 
                     alt="UPI QR Code"
+                    loading="lazy"
+                    decoding="async"
+                    width="300"
+                    height="300"
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://pay?pa=fizzysdesigns@upi&pn=Fizzys%20Designs&am=1000&cu=INR';
@@ -320,7 +324,15 @@ const Cart = ({ cart, setCart }) => {
               <div className="checkout-items">
                 {cart.map((item) => (
                   <div className="checkout-item" key={`${item._id}-${item.size}`}>
-                    <img src={getImageUrl(item.image)} alt={item.name} />
+                    {/* ✅ OPTIMIZED CHECKOUT IMAGE */}
+                    <img 
+                      src={getImageUrl(item.image)} 
+                      alt={item.name}
+                      loading="lazy"
+                      decoding="async"
+                      width="80"
+                      height="100"
+                    />
                     <div className="checkout-item-info">
                       <h4>{item.name}</h4>
                       <p>Size: {item.size} × {item.quantity}</p>
@@ -503,7 +515,15 @@ const Cart = ({ cart, setCart }) => {
           <div className="cart-items">
             {cart.map((item) => (
               <div className="cart-item" key={`${item._id}-${item.size}`}>
-                <img src={getImageUrl(item.image)} alt={item.name} />
+                {/* ✅ OPTIMIZED CART IMAGE */}
+                <img 
+                  src={getImageUrl(item.image)} 
+                  alt={item.name}
+                  loading="lazy"
+                  decoding="async"
+                  width="120"
+                  height="150"
+                />
                 
                 <div className="cart-item-info">
                   <h3>{item.name}</h3>
