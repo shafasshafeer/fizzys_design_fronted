@@ -12,6 +12,10 @@ const EditProduct = ({ fetchProducts }) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [previewImages, setPreviewImages] = useState([]);
+  
+  // ✅ NEW: Size stock state
+  const [sizeStock, setSizeStock] = useState({});
+  
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -21,7 +25,7 @@ const EditProduct = ({ fetchProducts }) => {
     images: [],
     isNew: false,
     isBestseller: false,
-    stock: 10,
+    stock: 0,
     category: 'ethnic'
   });
 
@@ -43,6 +47,31 @@ const EditProduct = ({ fetchProducts }) => {
         const response = await axios.get(`/api/products/${id}`);
         if (response.data.success) {
           const product = response.data.product;
+          
+          // Set sizeStock from product
+          const stockMap = {};
+          if (product.sizeStock) {
+            // Handle both Map and plain object
+            if (product.sizeStock instanceof Map) {
+              for (const [size, count] of product.sizeStock) {
+                stockMap[size] = count;
+              }
+            } else if (typeof product.sizeStock === 'object') {
+              for (const size in product.sizeStock) {
+                stockMap[size] = product.sizeStock[size];
+              }
+            }
+          }
+          
+          // If no sizeStock exists but sizes exist, initialize with 0
+          if (product.sizes && product.sizes.length > 0 && Object.keys(stockMap).length === 0) {
+            product.sizes.forEach(size => {
+              stockMap[size] = 0;
+            });
+          }
+          
+          setSizeStock(stockMap);
+          
           setFormData({
             name: product.name || '',
             price: product.price || '',
@@ -52,11 +81,11 @@ const EditProduct = ({ fetchProducts }) => {
             images: product.images || [],
             isNew: product.isNew || false,
             isBestseller: product.isBestseller || false,
-            stock: product.stock || 10,
+            stock: product.stock || 0,
             category: product.category || 'ethnic'
           });
           
-          // Set preview images - store URLs as-is, don't convert to base64
+          // Set preview images
           const previews = [];
           if (product.image) {
             previews.push({ 
@@ -105,16 +134,39 @@ const EditProduct = ({ fetchProducts }) => {
   };
 
   const handleSizeToggle = (size) => {
+    const newSizes = formData.sizes.includes(size)
+      ? formData.sizes.filter(s => s !== size)
+      : [...formData.sizes, size];
+    
+    // Update sizes
     setFormData({
       ...formData,
-      sizes: formData.sizes.includes(size)
-        ? formData.sizes.filter(s => s !== size)
-        : [...formData.sizes, size]
+      sizes: newSizes
+    });
+    
+    // Update sizeStock - add new sizes with 0 stock, remove unchecked sizes
+    const newStock = { ...sizeStock };
+    if (newSizes.includes(size) && !(size in newStock)) {
+      newStock[size] = 0;
+    } else if (!newSizes.includes(size)) {
+      delete newStock[size];
+    }
+    setSizeStock(newStock);
+  };
+
+  // ============================================
+  // ✅ NEW: Handle Size Stock Change
+  // ============================================
+  const handleSizeStockChange = (size, value) => {
+    const stockValue = parseInt(value) || 0;
+    setSizeStock({
+      ...sizeStock,
+      [size]: stockValue
     });
   };
 
   // ============================================
-  // Handle New Main Image Upload
+  // Handle Image Uploads
   // ============================================
   const handleMainImageUpload = (e) => {
     const file = e.target.files[0];
@@ -128,13 +180,10 @@ const EditProduct = ({ fetchProducts }) => {
         return;
       }
       
-      // Read file for preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImages(prev => {
-          // Remove existing main image
           const filtered = prev.filter(p => !p.isMain);
-          // Add new main image with file reference
           return [{ 
             url: reader.result, 
             file: file,
@@ -148,9 +197,6 @@ const EditProduct = ({ fetchProducts }) => {
     }
   };
 
-  // ============================================
-  // Handle New Additional Images Upload
-  // ============================================
   const handleAdditionalImagesUpload = (e) => {
     const files = Array.from(e.target.files);
     const validFiles = files.filter(file => {
@@ -200,19 +246,26 @@ const EditProduct = ({ fetchProducts }) => {
     });
   };
 
-  // ============================================
-  // Remove Image
-  // ============================================
   const removeImage = (index) => {
     setPreviewImages(prev => {
       const newPreviews = prev.filter((_, i) => i !== index);
-      // If we removed the main image and there are others, make the first one main
       const hasMain = newPreviews.some(p => p.isMain);
       if (!hasMain && newPreviews.length > 0) {
         newPreviews[0].isMain = true;
       }
       return newPreviews;
     });
+  };
+
+  // ============================================
+  // ✅ NEW: Calculate total stock
+  // ============================================
+  const calculateTotalStock = () => {
+    let total = 0;
+    for (const size in sizeStock) {
+      total += sizeStock[size] || 0;
+    }
+    return total;
   };
 
   // ============================================
@@ -226,10 +279,18 @@ const EditProduct = ({ fetchProducts }) => {
       return;
     }
 
-    // Check if we have at least one image (either existing or new)
+    // Check if we have at least one image
     if (previewImages.length === 0) {
       toast.error('Please add at least one image');
       return;
+    }
+
+    // ✅ Validate size stock
+    for (const size of formData.sizes) {
+      if (!(size in sizeStock) || sizeStock[size] < 0) {
+        toast.error(`Please set valid stock for size ${size}`);
+        return;
+      }
     }
 
     setSaving(true);
@@ -242,47 +303,35 @@ const EditProduct = ({ fetchProducts }) => {
       formDataToSend.append('description', formData.description || '');
       formDataToSend.append('sizes', JSON.stringify(formData.sizes));
       formDataToSend.append('category', formData.category);
-      formDataToSend.append('stock', String(formData.stock));
       formDataToSend.append('isNew', String(formData.isNew));
       formDataToSend.append('isBestseller', String(formData.isBestseller));
       
-      // Log what we're sending
+      // ✅ Send sizeStock as JSON
+      formDataToSend.append('sizeStock', JSON.stringify(sizeStock));
+      
+      // ✅ Calculate and send total stock
+      const totalStock = calculateTotalStock();
+      formDataToSend.append('stock', String(totalStock));
+      
       console.log('📤 Sending update for product:', id);
-      console.log('📋 Form data:', {
-        name: formData.name,
-        price: formData.price,
-        category: formData.category,
-        sizes: formData.sizes
-      });
+      console.log('📋 Size Stock:', sizeStock);
+      console.log('📋 Total Stock:', totalStock);
       
-      // Handle images - ONLY send NEW images that have actual files
+      // Handle images - ONLY send NEW images
       const newImages = previewImages.filter(p => p.isNew && p.file);
-      console.log('📸 New images to upload:', newImages.length);
       
-      // Main image
       const mainImage = newImages.find(p => p.isMain);
       if (mainImage && mainImage.file) {
         formDataToSend.append('image', mainImage.file);
         console.log('📸 Uploading new main image');
       }
       
-      // Additional images
       const additionalImages = newImages.filter(p => !p.isMain);
       additionalImages.forEach((img) => {
         if (img.file) {
           formDataToSend.append('images', img.file);
           console.log('📸 Uploading additional image');
         }
-      });
-
-      // If there are existing images and no new ones, we keep them
-      // The backend will keep the existing image URLs if no new files are uploaded
-      const hasExistingMain = previewImages.some(p => p.isMain && p.isExisting);
-      const hasExistingAdditional = previewImages.some(p => !p.isMain && p.isExisting);
-      
-      console.log('📸 Existing images:', {
-        main: hasExistingMain,
-        additional: hasExistingAdditional
       });
 
       const response = await axios.put(`/api/products/${id}`, formDataToSend, {
@@ -342,7 +391,7 @@ const EditProduct = ({ fetchProducts }) => {
             />
           </div>
 
-          {/* Price and Stock */}
+          {/* Price */}
           <div className="form-row">
             <div className="form-group">
               <label>Price (₹) *</label>
@@ -355,17 +404,6 @@ const EditProduct = ({ fetchProducts }) => {
                 required
                 min="0"
                 step="0.01"
-              />
-            </div>
-            <div className="form-group">
-              <label>Stock Quantity</label>
-              <input
-                type="number"
-                name="stock"
-                value={formData.stock}
-                onChange={handleChange}
-                placeholder="Enter stock"
-                min="0"
               />
             </div>
           </div>
@@ -447,7 +485,7 @@ const EditProduct = ({ fetchProducts }) => {
             </div>
           </div>
 
-          {/* Sizes Selection */}
+          {/* ✅ NEW: Sizes with Stock */}
           <div className="form-group">
             <label>Available Sizes *</label>
             <div className="size-checkboxes">
@@ -463,6 +501,31 @@ const EditProduct = ({ fetchProducts }) => {
               ))}
             </div>
           </div>
+
+          {/* ✅ NEW: Size Stock Input */}
+          {formData.sizes.length > 0 && (
+            <div className="form-group">
+              <label>Stock by Size *</label>
+              <p className="form-helper">Enter stock quantity for each size</p>
+              <div className="size-stock-grid">
+                {formData.sizes.map((size) => (
+                  <div className="size-stock-item" key={size}>
+                    <label>{size}</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={sizeStock[size] || 0}
+                      onChange={(e) => handleSizeStockChange(size, e.target.value)}
+                      placeholder="0"
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="total-stock-display">
+                <strong>Total Stock:</strong> {calculateTotalStock()} units
+              </div>
+            </div>
+          )}
 
           {/* Status Checkboxes */}
           <div className="form-group checkbox-group">

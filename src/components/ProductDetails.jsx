@@ -18,6 +18,32 @@ const ProductDetails = ({ products, addToCart }) => {
 
   const productList = Array.isArray(products) ? products : [];
 
+  // ✅ Helper: Get stock for a specific size
+  const getSizeStock = (product, size) => {
+    if (product?.sizeStock && typeof product.sizeStock === 'object') {
+      return product.sizeStock[size] || 0;
+    }
+    // Fallback to total stock
+    return product?.stock || 0;
+  };
+
+  // ✅ Helper: Check if a size is in stock
+  const isSizeInStock = (product, size) => {
+    return getSizeStock(product, size) > 0;
+  };
+
+  // ✅ Helper: Get total available stock across all sizes
+  const getTotalStock = (product) => {
+    if (product?.sizeStock && typeof product.sizeStock === 'object') {
+      let total = 0;
+      for (const size in product.sizeStock) {
+        total += product.sizeStock[size] || 0;
+      }
+      return total;
+    }
+    return product?.stock || 0;
+  };
+
   useEffect(() => {
     const found = productList.find(p => p._id === id);
     if (found) {
@@ -51,38 +77,48 @@ const ProductDetails = ({ products, addToCart }) => {
 
   const allImages = getAllImages();
 
+  // ✅ Updated: Check stock for selected size
   const handleAddToCart = () => {
     if (!selectedSize) {
       toast.error('Please select a size');
       return;
     }
-    if (product.stock <= 0) {
-      toast.error('This product is out of stock');
+    
+    const sizeStock = getSizeStock(product, selectedSize);
+    if (sizeStock <= 0) {
+      toast.error(`${selectedSize} size is out of stock`);
       return;
     }
-    if (quantity > product.stock) {
-      toast.error(`Only ${product.stock} items available in stock`);
+    
+    if (quantity > sizeStock) {
+      toast.error(`Only ${sizeStock} items available in ${selectedSize} size`);
       return;
     }
+    
     for (let i = 0; i < quantity; i++) {
       addToCart(product, selectedSize);
     }
-    toast.success(`${product.name} added to cart!`);
+    toast.success(`${product.name} (${selectedSize}) added to cart!`);
   };
 
+  // ✅ Updated: Check stock for selected size
   const handleOrderNow = () => {
     if (!selectedSize) {
       toast.error('Please select a size');
       return;
     }
-    if (product.stock <= 0) {
-      toast.error('This product is out of stock');
+    
+    const sizeStock = getSizeStock(product, selectedSize);
+    if (sizeStock <= 0) {
+      toast.error(`${selectedSize} size is out of stock`);
       return;
     }
-    if (quantity > product.stock) {
-      toast.error(`Only ${product.stock} items available in stock`);
+    
+    if (quantity > sizeStock) {
+      toast.error(`Only ${sizeStock} items available in ${selectedSize} size`);
       return;
     }
+    
     for (let i = 0; i < quantity; i++) {
       addToCart(product, selectedSize);
     }
@@ -97,12 +133,18 @@ const ProductDetails = ({ products, addToCart }) => {
     setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
   };
 
-  const isInStock = product && product.stock > 0;
-  const stockStatus = product && product.stock > 10 ? 'In Stock' : 
-                       product && product.stock > 0 ? `Only ${product.stock} left` : 
+  const totalStock = product ? getTotalStock(product) : 0;
+  const isInStock = totalStock > 0;
+  
+  // ✅ Get stock for selected size
+  const selectedSizeStock = selectedSize ? getSizeStock(product, selectedSize) : 0;
+  const isSelectedSizeInStock = selectedSize ? selectedSizeStock > 0 : false;
+
+  const stockStatus = totalStock > 10 ? 'In Stock' : 
+                       totalStock > 0 ? `Only ${totalStock} left` : 
                        'Out of Stock';
-  const stockClass = product && product.stock > 10 ? 'in-stock' : 
-                      product && product.stock > 0 ? 'low-stock' : 
+  const stockClass = totalStock > 10 ? 'in-stock' : 
+                      totalStock > 0 ? 'low-stock' : 
                       'out-of-stock';
 
   if (loading) {
@@ -141,7 +183,6 @@ const ProductDetails = ({ products, addToCart }) => {
           <div className="product-image-section">
             <div className="main-image-wrapper">
               <div className="main-image" onClick={() => setIsImageModalOpen(true)}>
-                {/* ✅ OPTIMIZED MAIN IMAGE */}
                 <img 
                   src={getImageUrl(allImages[currentImageIndex])} 
                   alt={product.name}
@@ -203,7 +244,7 @@ const ProductDetails = ({ products, addToCart }) => {
             <div className={`stock-status ${stockClass}`}>
               <span className="stock-dot"></span>
               <span className="stock-text">{stockStatus}</span>
-              {isInStock && <span className="stock-quantity">({product.stock} units available)</span>}
+              {isInStock && <span className="stock-quantity">({totalStock} units available across all sizes)</span>}
             </div>
             
             <div className="product-rating">
@@ -216,69 +257,98 @@ const ProductDetails = ({ products, addToCart }) => {
               <p>{product.description || 'This exquisite piece is crafted with premium quality fabric and impeccable stitching. Perfect for any occasion, this design reflects elegance and timeless beauty.'}</p>
             </div>
 
+            {/* ✅ Updated: Size selection with stock info */}
             <div className="size-selection">
               <div className="size-header">
                 <h4>Select Size</h4>
                 <button className="size-guide-btn">Size Guide</button>
               </div>
               <div className="size-options">
-                {product.sizes && product.sizes.map((size) => (
-                  <button
-                    key={size}
-                    className={`size-option ${selectedSize === size ? 'active' : ''}`}
-                    onClick={() => setSelectedSize(size)}
-                    disabled={!isInStock}
-                  >
-                    {size}
-                  </button>
-                ))}
+                {product.sizes && product.sizes.map((size) => {
+                  const sizeStock = getSizeStock(product, size);
+                  const inStock = sizeStock > 0;
+                  const isSelected = selectedSize === size;
+                  
+                  return (
+                    <button
+                      key={size}
+                      className={`size-option ${isSelected ? 'active' : ''} ${!inStock ? 'out-of-stock' : ''}`}
+                      onClick={() => setSelectedSize(size)}
+                      disabled={!inStock}
+                      title={inStock ? `${sizeStock} available` : 'Out of stock'}
+                    >
+                      {size}
+                      {inStock && sizeStock <= 3 && (
+                        <span className="size-stock-low"> ({sizeStock} left)</span>
+                      )}
+                      {!inStock && (
+                        <span className="size-stock-out"> 🔴</span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
+              {selectedSize && (
+                <div className="selected-size-stock">
+                  <span className="stock-label">Available stock for {selectedSize}:</span>
+                  <span className={`stock-value ${selectedSizeStock <= 3 ? 'low' : ''}`}>
+                    {selectedSizeStock} units
+                  </span>
+                </div>
+              )}
             </div>
 
+            {/* ✅ Updated: Quantity with size-specific stock */}
             <div className="quantity-selection">
               <h4>Quantity</h4>
               <div className="quantity-controls">
                 <button 
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="qty-btn"
-                  disabled={!isInStock}
+                  disabled={!isSelectedSizeInStock}
                 >
                   -
                 </button>
                 <span className="qty-number">{quantity}</span>
                 <button 
                   onClick={() => {
-                    if (product && quantity < product.stock) {
+                    if (selectedSize && quantity < selectedSizeStock) {
                       setQuantity(quantity + 1);
+                    } else if (!selectedSize) {
+                      toast.error('Please select a size first');
                     } else {
-                      toast.error(`Only ${product?.stock} items available`);
+                      toast.error(`Only ${selectedSizeStock} items available in ${selectedSize} size`);
                     }
                   }}
                   className="qty-btn"
-                  disabled={!isInStock || quantity >= product.stock}
+                  disabled={!isSelectedSizeInStock || quantity >= selectedSizeStock}
                 >
                   +
                 </button>
               </div>
-              {isInStock && product && quantity > product.stock && (
-                <p className="stock-warning">Only {product.stock} items available</p>
+              {selectedSize && quantity > selectedSizeStock && (
+                <p className="stock-warning">Only {selectedSizeStock} items available in {selectedSize}</p>
+              )}
+              {!selectedSize && (
+                <p className="stock-warning">Please select a size to see available quantity</p>
               )}
             </div>
 
             <div className="action-buttons">
               <button 
-                className={`add-to-cart-btn-details ${!isInStock ? 'disabled' : ''}`}
+                className={`add-to-cart-btn-details ${!isSelectedSizeInStock ? 'disabled' : ''}`}
                 onClick={handleAddToCart}
-                disabled={!isInStock}
+                disabled={!isSelectedSizeInStock}
               >
-                <FiShoppingCart /> {isInStock ? 'ADD TO CART' : 'OUT OF STOCK'}
+                <FiShoppingCart /> 
+                {isSelectedSizeInStock ? 'ADD TO CART' : 'OUT OF STOCK'}
               </button>
               <button 
-                className={`order-now-btn ${!isInStock ? 'disabled' : ''}`}
+                className={`order-now-btn ${!isSelectedSizeInStock ? 'disabled' : ''}`}
                 onClick={handleOrderNow}
-                disabled={!isInStock}
+                disabled={!isSelectedSizeInStock}
               >
-                {isInStock ? 'ORDER NOW' : 'NOT AVAILABLE'}
+                {isSelectedSizeInStock ? 'ORDER NOW' : 'NOT AVAILABLE'}
               </button>
             </div>
 
@@ -310,33 +380,35 @@ const ProductDetails = ({ products, addToCart }) => {
           <div className="related-products">
             <h2 className="section-title">Related Products</h2>
             <div className="related-grid">
-              {relatedProducts.map((related) => (
-                <Link to={`/product/${related._id}`} key={related._id} className="related-card">
-                  <div className="related-image">
-                    {/* ✅ OPTIMIZED RELATED PRODUCT IMAGE */}
-                    <img 
-                      src={getImageUrl(related.image)} 
-                      alt={related.name}
-                      loading="lazy"
-                      decoding="async"
-                      width="300"
-                      height="400"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=300&h=400&fit=crop';
-                      }}
-                    />
-                    {related.stock <= 0 && (
-                      <span className="out-of-stock-badge">Out of Stock</span>
-                    )}
-                    {related.stock > 0 && related.stock <= 5 && (
-                      <span className="low-stock-badge">Only {related.stock} left</span>
-                    )}
-                  </div>
-                  <h4>{related.name}</h4>
-                  <p>₹{related.price?.toLocaleString() || related.price}</p>
-                </Link>
-              ))}
+              {relatedProducts.map((related) => {
+                const relatedTotalStock = getTotalStock(related);
+                return (
+                  <Link to={`/product/${related._id}`} key={related._id} className="related-card">
+                    <div className="related-image">
+                      <img 
+                        src={getImageUrl(related.image)} 
+                        alt={related.name}
+                        loading="lazy"
+                        decoding="async"
+                        width="300"
+                        height="400"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=300&h=400&fit=crop';
+                        }}
+                      />
+                      {relatedTotalStock <= 0 && (
+                        <span className="out-of-stock-badge">Out of Stock</span>
+                      )}
+                      {relatedTotalStock > 0 && relatedTotalStock <= 5 && (
+                        <span className="low-stock-badge">Only {relatedTotalStock} left</span>
+                      )}
+                    </div>
+                    <h4>{related.name}</h4>
+                    <p>₹{related.price?.toLocaleString() || related.price}</p>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         )}
@@ -349,7 +421,6 @@ const ProductDetails = ({ products, addToCart }) => {
               <FiX />
             </button>
             <div className="image-modal-content">
-              {/* ✅ OPTIMIZED MODAL IMAGE */}
               <img 
                 src={getImageUrl(allImages[currentImageIndex])} 
                 alt={product.name}

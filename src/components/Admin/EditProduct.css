@@ -58,6 +58,13 @@
   font-size: 14px;
 }
 
+.form-helper {
+  display: block;
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
+
 .form-group input,
 .form-group textarea,
 .form-group select {
@@ -81,6 +88,93 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
+}
+
+/* ✅ NEW: Size Stock Grid */
+.size-stock-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.size-stock-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.size-stock-item label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+}
+
+.size-stock-item input {
+  padding: 8px 12px;
+  border: 1px solid #e0d6cc;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 100%;
+  text-align: center;
+  transition: border-color 0.3s;
+}
+
+.size-stock-item input:focus {
+  outline: none;
+  border-color: #c4a882;
+}
+
+.size-stock-item input:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
+/* ✅ NEW: Total Stock Display */
+.total-stock-display {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: #f8f5f2;
+  border-radius: 8px;
+  font-size: 15px;
+  color: #1a1a1a;
+  border: 1px solid #e0d6cc;
+}
+
+.total-stock-display strong {
+  color: #1a1a1a;
+}
+
+.total-stock-display .stock-count {
+  font-weight: 700;
+  color: #c4a882;
+  font-size: 18px;
+}
+
+/* ✅ NEW: Size Badge with Stock Info */
+.size-stock-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.size-stock-badge.in-stock {
+  background: #22c55e;
+  color: white;
+}
+
+.size-stock-badge.low-stock {
+  background: #f59e0b;
+  color: white;
+}
+
+.size-stock-badge.out-of-stock {
+  background: #ef4444;
+  color: white;
 }
 
 .image-upload-section .image-helper {
@@ -160,6 +254,18 @@
   top: 8px;
   right: 8px;
   background: #22c55e;
+  color: white;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.image-badge-existing {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #3b82f6;
   color: white;
   padding: 2px 10px;
   border-radius: 4px;
@@ -317,6 +423,9 @@
   font-size: 16px;
 }
 
+/* ============================================
+   ✅ RESPONSIVE
+   ============================================ */
 @media (max-width: 768px) {
   .edit-header {
     flex-direction: column;
@@ -348,11 +457,42 @@
   .form-actions {
     flex-direction: column;
   }
+  
+  /* ✅ NEW: Size stock responsive */
+  .size-stock-grid {
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 10px;
+  }
+  
+  .size-stock-item input {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
 }
 
 @media (max-width: 480px) {
   .image-upload-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
+  }
+  
+  /* ✅ NEW: Size stock responsive */
+  .size-stock-grid {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 8px;
+  }
+  
+  .size-stock-item label {
+    font-size: 11px;
+  }
+  
+  .size-stock-item input {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  
+  .total-stock-display {
+    font-size: 13px;
+    padding: 10px 12px;
   }
 }

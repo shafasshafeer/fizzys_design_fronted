@@ -30,13 +30,25 @@ const Cart = ({ cart, setCart }) => {
 
   const total = cart.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
 
+  // ✅ Helper: Get stock for a specific size
+  const getSizeStock = (item) => {
+    if (item.sizeStock && typeof item.sizeStock === 'object') {
+      return item.sizeStock[item.size] || 0;
+    }
+    // Fallback to total stock
+    return item.stock || 0;
+  };
+
   const updateQuantity = (id, size, change) => {
     setCart(cart.map(item => {
       if (item._id === id && item.size === size) {
         const newQuantity = item.quantity + change;
         if (newQuantity <= 0) return null;
-        if (newQuantity > item.stock) {
-          toast.error(`Only ${item.stock} items available in stock`);
+        
+        // ✅ Check stock for this specific size
+        const sizeStock = getSizeStock(item);
+        if (newQuantity > sizeStock) {
+          toast.error(`Only ${sizeStock} items available in ${size} size`);
           return item;
         }
         return { ...item, quantity: newQuantity };
@@ -108,13 +120,15 @@ const Cart = ({ cart, setCart }) => {
   const placeOrder = async () => {
     if (!validateForm()) return;
 
+    // ✅ Check stock per size for each item
     for (const item of cart) {
-      if (item.stock <= 0) {
-        toast.error(`${item.name} is out of stock`);
+      const sizeStock = getSizeStock(item);
+      if (sizeStock <= 0) {
+        toast.error(`${item.name} (${item.size}) is out of stock`);
         return;
       }
-      if (item.quantity > item.stock) {
-        toast.error(`Only ${item.stock} ${item.name} available`);
+      if (item.quantity > sizeStock) {
+        toast.error(`Only ${sizeStock} ${item.name} (${item.size}) available`);
         return;
       }
     }
@@ -128,7 +142,8 @@ const Cart = ({ cart, setCart }) => {
           price: item.price,
           size: item.size,
           quantity: item.quantity,
-          image: item.image
+          image: item.image,
+          sizeStock: item.sizeStock // Include for reference
         })),
         total: total,
         subtotal: total,
@@ -322,27 +337,32 @@ const Cart = ({ cart, setCart }) => {
             <div className="checkout-summary">
               <h3>Order Summary</h3>
               <div className="checkout-items">
-                {cart.map((item) => (
-                  <div className="checkout-item" key={`${item._id}-${item.size}`}>
-                    {/* ✅ OPTIMIZED CHECKOUT IMAGE */}
-                    <img 
-                      src={getImageUrl(item.image)} 
-                      alt={item.name}
-                      loading="lazy"
-                      decoding="async"
-                      width="80"
-                      height="100"
-                    />
-                    <div className="checkout-item-info">
-                      <h4>{item.name}</h4>
-                      <p>Size: {item.size} × {item.quantity}</p>
-                      <span>₹{item.price?.toLocaleString()}</span>
-                      {item.stock <= 5 && item.stock > 0 && (
-                        <span className="stock-warning-small">⚠️ Only {item.stock} left</span>
-                      )}
+                {cart.map((item) => {
+                  const sizeStock = getSizeStock(item);
+                  return (
+                    <div className="checkout-item" key={`${item._id}-${item.size}`}>
+                      <img 
+                        src={getImageUrl(item.image)} 
+                        alt={item.name}
+                        loading="lazy"
+                        decoding="async"
+                        width="80"
+                        height="100"
+                      />
+                      <div className="checkout-item-info">
+                        <h4>{item.name}</h4>
+                        <p>Size: {item.size} × {item.quantity}</p>
+                        <span>₹{item.price?.toLocaleString()}</span>
+                        {sizeStock <= 5 && sizeStock > 0 && (
+                          <span className="stock-warning-small">⚠️ Only {sizeStock} left in {item.size}</span>
+                        )}
+                        {sizeStock <= 0 && (
+                          <span className="stock-out-small">🔴 Out of stock</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               <div className="checkout-total">
                 <div className="checkout-total-row">
@@ -513,51 +533,60 @@ const Cart = ({ cart, setCart }) => {
         
         <div className="cart-content">
           <div className="cart-items">
-            {cart.map((item) => (
-              <div className="cart-item" key={`${item._id}-${item.size}`}>
-                {/* ✅ OPTIMIZED CART IMAGE */}
-                <img 
-                  src={getImageUrl(item.image)} 
-                  alt={item.name}
-                  loading="lazy"
-                  decoding="async"
-                  width="120"
-                  height="150"
-                />
-                
-                <div className="cart-item-info">
-                  <h3>{item.name}</h3>
-                  <p className="cart-item-size">Size: {item.size}</p>
-                  <p className="cart-item-price">₹{item.price?.toLocaleString() || item.price}</p>
-                  {item.stock <= 5 && item.stock > 0 && (
-                    <p className="stock-warning-small">⚠️ Only {item.stock} left in stock</p>
-                  )}
-                </div>
+            {cart.map((item) => {
+              const sizeStock = getSizeStock(item);
+              const isOutOfStock = sizeStock <= 0;
+              
+              return (
+                <div className={`cart-item ${isOutOfStock ? 'out-of-stock-item' : ''}`} key={`${item._id}-${item.size}`}>
+                  <img 
+                    src={getImageUrl(item.image)} 
+                    alt={item.name}
+                    loading="lazy"
+                    decoding="async"
+                    width="120"
+                    height="150"
+                  />
+                  
+                  <div className="cart-item-info">
+                    <h3>{item.name}</h3>
+                    <p className="cart-item-size">Size: {item.size}</p>
+                    <p className="cart-item-price">₹{item.price?.toLocaleString() || item.price}</p>
+                    {isOutOfStock ? (
+                      <p className="stock-out">🔴 Out of stock in {item.size}</p>
+                    ) : sizeStock <= 3 ? (
+                      <p className="stock-warning-small">⚠️ Only {sizeStock} left in {item.size}</p>
+                    ) : (
+                      <p className="stock-available">✅ {sizeStock} available in {item.size}</p>
+                    )}
+                  </div>
 
-                <div className="cart-item-actions">
-                  <div className="quantity-control">
+                  <div className="cart-item-actions">
+                    <div className="quantity-control">
+                      <button 
+                        onClick={() => updateQuantity(item._id, item.size, -1)}
+                        disabled={isOutOfStock}
+                      >
+                        <FiMinus />
+                      </button>
+                      <span>{item.quantity}</span>
+                      <button 
+                        onClick={() => updateQuantity(item._id, item.size, 1)}
+                        disabled={isOutOfStock || item.quantity >= sizeStock}
+                      >
+                        <FiPlus />
+                      </button>
+                    </div>
                     <button 
-                      onClick={() => updateQuantity(item._id, item.size, -1)}
+                      className="remove-btn"
+                      onClick={() => removeItem(item._id, item.size)}
                     >
-                      <FiMinus />
-                    </button>
-                    <span>{item.quantity}</span>
-                    <button 
-                      onClick={() => updateQuantity(item._id, item.size, 1)}
-                      disabled={item.quantity >= item.stock}
-                    >
-                      <FiPlus />
+                      <FiTrash2 />
                     </button>
                   </div>
-                  <button 
-                    className="remove-btn"
-                    onClick={() => removeItem(item._id, item.size)}
-                  >
-                    <FiTrash2 />
-                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="cart-summary">

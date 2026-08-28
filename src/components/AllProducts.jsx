@@ -33,6 +33,32 @@ const AllProducts = ({ products, addToCart, loading }) => {
 
   const productList = Array.isArray(products) ? products : [];
 
+  // ✅ Helper: Get stock for a specific size
+  const getSizeStock = (product, size) => {
+    if (product.sizeStock && typeof product.sizeStock === 'object') {
+      return product.sizeStock[size] || 0;
+    }
+    // Fallback to total stock
+    return product.stock || 0;
+  };
+
+  // ✅ Helper: Check if a size is in stock
+  const isSizeInStock = (product, size) => {
+    return getSizeStock(product, size) > 0;
+  };
+
+  // ✅ Helper: Get total available stock across all sizes
+  const getTotalStock = (product) => {
+    if (product.sizeStock && typeof product.sizeStock === 'object') {
+      let total = 0;
+      for (const size in product.sizeStock) {
+        total += product.sizeStock[size] || 0;
+      }
+      return total;
+    }
+    return product.stock || 0;
+  };
+
   useEffect(() => {
     let filtered = [...productList];
 
@@ -69,8 +95,16 @@ const AllProducts = ({ products, addToCart, loading }) => {
       toast.error('Please select a size');
       return;
     }
+    
+    // ✅ Check if the selected size has stock
+    const sizeStock = getSizeStock(product, size);
+    if (sizeStock <= 0) {
+      toast.error(`${size} size is out of stock`);
+      return;
+    }
+    
     addToCart(product, size);
-    toast.success(`${product.name} added to cart!`);
+    toast.success(`${product.name} (${size}) added to cart!`);
   };
 
   if (loading) {
@@ -171,59 +205,82 @@ const AllProducts = ({ products, addToCart, loading }) => {
           </div>
         ) : (
           <div className={`product-grid ${viewMode === 'list' ? 'list-view' : ''}`}>
-            {filteredProducts.map((product) => (
-              <div className={`product-card ${viewMode === 'list' ? 'list-card' : ''}`} key={product._id}>
-                <Link to={`/product/${product._id}`} className="product-link">
-                  <div className="product-image">
-                    {/* ✅ OPTIMIZED IMAGE */}
-                    <img 
-                      src={getImageUrl(product.image)} 
-                      alt={product.name}
-                      loading="lazy"
-                      decoding="async"
-                      width="400"
-                      height="500"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
-                      }}
-                    />
-                    {product.isNew && <span className="product-badge new">NEW</span>}
-                    {product.isBestseller && <span className="product-badge bestseller">BESTSELLER</span>}
-                    {product.stock <= 0 && <span className="product-badge out-of-stock">OUT OF STOCK</span>}
-                    {product.category && <span className="product-category-tag">{product.category}</span>}
-                  </div>
-                </Link>
-                
-                <div className="product-info">
+            {filteredProducts.map((product) => {
+              const totalStock = getTotalStock(product);
+              const hasAnyStock = totalStock > 0;
+              
+              return (
+                <div className={`product-card ${viewMode === 'list' ? 'list-card' : ''}`} key={product._id}>
                   <Link to={`/product/${product._id}`} className="product-link">
-                    <h3 className="product-name">{product.name}</h3>
+                    <div className="product-image">
+                      <img 
+                        src={getImageUrl(product.image)} 
+                        alt={product.name}
+                        loading="lazy"
+                        decoding="async"
+                        width="400"
+                        height="500"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&h=500&fit=crop';
+                        }}
+                      />
+                      {product.isNew && <span className="product-badge new">NEW</span>}
+                      {product.isBestseller && <span className="product-badge bestseller">BESTSELLER</span>}
+                      {!hasAnyStock && <span className="product-badge out-of-stock">OUT OF STOCK</span>}
+                      {product.category && <span className="product-category-tag">{product.category}</span>}
+                    </div>
                   </Link>
-                  <p className="product-price">₹{product.price?.toLocaleString() || product.price}</p>
                   
-                  <div className="product-sizes">
-                    {product.sizes && product.sizes.map((size) => (
-                      <button
-                        key={size}
-                        className={`size-btn ${selectedSize[product._id] === size ? 'active' : ''}`}
-                        onClick={() => setSelectedSize({ ...selectedSize, [product._id]: size })}
-                        disabled={product.stock <= 0}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
+                  <div className="product-info">
+                    <Link to={`/product/${product._id}`} className="product-link">
+                      <h3 className="product-name">{product.name}</h3>
+                    </Link>
+                    <p className="product-price">₹{product.price?.toLocaleString() || product.price}</p>
+                    
+                    {/* ✅ Sizes with stock indicators */}
+                    <div className="product-sizes">
+                      {product.sizes && product.sizes.map((size) => {
+                        const sizeStock = getSizeStock(product, size);
+                        const isInStock = sizeStock > 0;
+                        const isSelected = selectedSize[product._id] === size;
+                        
+                        return (
+                          <button
+                            key={size}
+                            className={`size-btn ${isSelected ? 'active' : ''} ${!isInStock ? 'out-of-stock' : ''}`}
+                            onClick={() => setSelectedSize({ ...selectedSize, [product._id]: size })}
+                            disabled={!isInStock}
+                            title={isInStock ? `${sizeStock} available` : 'Out of stock'}
+                          >
+                            {size}
+                            {isInStock && sizeStock <= 2 && (
+                              <span className="size-stock-low"> ({sizeStock})</span>
+                            )}
+                            {!isInStock && (
+                              <span className="size-out"> 🔴</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
 
-                  <button 
-                    className={`add-to-cart-btn ${product.stock <= 0 ? 'disabled' : ''}`}
-                    onClick={() => handleAddToCart(product)}
-                    disabled={product.stock <= 0}
-                  >
-                    <FiShoppingCart /> {product.stock > 0 ? 'ADD TO CART' : 'OUT OF STOCK'}
-                  </button>
+                    <button 
+                      className={`add-to-cart-btn ${!hasAnyStock ? 'disabled' : ''}`}
+                      onClick={() => handleAddToCart(product)}
+                      disabled={!hasAnyStock}
+                    >
+                      <FiShoppingCart /> {hasAnyStock ? 'ADD TO CART' : 'OUT OF STOCK'}
+                    </button>
+                    
+                    {/* ✅ Show total stock if low */}
+                    {hasAnyStock && totalStock <= 5 && (
+                      <p className="stock-warning-small">⚠️ Only {totalStock} items left</p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
