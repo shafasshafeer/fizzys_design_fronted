@@ -17,15 +17,21 @@ export const getImageUrl = (imagePath) => {
     return imagePath;
   }
   
-  // ✅ If it's a Cloudinary URL - add optimization parameters
+  // ✅ If it's a Cloudinary URL - add WebP + optimization parameters
   if (typeof imagePath === 'string' && imagePath.includes('cloudinary.com')) {
     // Check if it already has parameters
     if (imagePath.includes('?')) {
+      // ✅ Add fm=webp if not already present
+      if (!imagePath.includes('fm=webp')) {
+        const optimizedUrl = `${imagePath}&fm=webp&w=400&h=500&c=limit&q=auto:low&f=auto`;
+        console.log('✅ Optimized WebP URL:', optimizedUrl);
+        return optimizedUrl;
+      }
       return imagePath;
     }
-    // Add optimization parameters for faster loading
-    const optimizedUrl = `${imagePath}?w=400&h=500&c=limit&q=auto:low&f=auto`;
-    console.log('✅ Optimized Cloudinary URL:', optimizedUrl);
+    // ✅ Add WebP format + optimization parameters
+    const optimizedUrl = `${imagePath}?fm=webp&w=400&h=500&c=limit&q=auto:low&f=auto`;
+    console.log('✅ Optimized WebP URL:', optimizedUrl);
     return optimizedUrl;
   }
   
