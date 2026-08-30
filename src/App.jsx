@@ -16,6 +16,7 @@ import EditProduct from './components/Admin/EditProduct';
 import Cart from './components/Cart';
 import ProductDetails from './components/ProductDetails';
 import AllProducts from './components/AllProducts';
+import ScrollToTop from './components/ScrollToTop'; // ✅ IMPORT ScrollToTop
 import './App.css';
 
 // Set base URL for all axios requests
@@ -87,6 +88,9 @@ function App() {
 
   return (
     <BrowserRouter>
+      {/* ✅ Add ScrollToTop here - it will work for all routes */}
+      <ScrollToTop />
+      
       <div className="App">
         <Toaster 
           position="top-right"
