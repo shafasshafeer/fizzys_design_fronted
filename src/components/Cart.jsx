@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FiTrash2, FiPlus, FiMinus, FiCreditCard, FiUser, FiPhone, FiMapPin, FiMail, FiMessageCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import axios from 'axios';
@@ -12,6 +12,10 @@ const Cart = ({ cart, setCart }) => {
   const [loading, setLoading] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [orderId, setOrderId] = useState(null);
+  
+  // ✅ References for scrolling to sections
+  const checkoutRef = useRef(null);
+  const paymentRef = useRef(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -35,9 +39,32 @@ const Cart = ({ cart, setCart }) => {
     if (item.sizeStock && typeof item.sizeStock === 'object') {
       return item.sizeStock[item.size] || 0;
     }
-    // Fallback to total stock
     return item.stock || 0;
   };
+
+  // ✅ NEW: Scroll to top when step changes
+  useEffect(() => {
+    if (step === 2 && checkoutRef.current) {
+      // Scroll to checkout section
+      checkoutRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    } else if (step === 3 && paymentRef.current) {
+      // Scroll to payment section
+      paymentRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    } else if (step === 1) {
+      // Scroll to top of cart
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'smooth'
+      });
+    }
+  }, [step]);
 
   const updateQuantity = (id, size, change) => {
     setCart(cart.map(item => {
@@ -45,7 +72,6 @@ const Cart = ({ cart, setCart }) => {
         const newQuantity = item.quantity + change;
         if (newQuantity <= 0) return null;
         
-        // ✅ Check stock for this specific size
         const sizeStock = getSizeStock(item);
         if (newQuantity > sizeStock) {
           toast.error(`Only ${sizeStock} items available in ${size} size`);
@@ -120,7 +146,6 @@ const Cart = ({ cart, setCart }) => {
   const placeOrder = async () => {
     if (!validateForm()) return;
 
-    // ✅ Check stock per size for each item
     for (const item of cart) {
       const sizeStock = getSizeStock(item);
       if (sizeStock <= 0) {
@@ -143,7 +168,7 @@ const Cart = ({ cart, setCart }) => {
           size: item.size,
           quantity: item.quantity,
           image: item.image,
-          sizeStock: item.sizeStock // Include for reference
+          sizeStock: item.sizeStock
         })),
         total: total,
         subtotal: total,
@@ -237,7 +262,7 @@ const Cart = ({ cart, setCart }) => {
 
   if (step === 3 && showQR) {
     return (
-      <div className="cart-page payment-page">
+      <div ref={paymentRef} className="cart-page payment-page">
         <div className="container">
           <div className="payment-container">
             <div className="payment-header">
@@ -329,7 +354,7 @@ const Cart = ({ cart, setCart }) => {
 
   if (step === 2) {
     return (
-      <div className="cart-page checkout-page">
+      <div ref={checkoutRef} className="cart-page checkout-page">
         <div className="container">
           <h2 className="cart-title">Checkout</h2>
           
